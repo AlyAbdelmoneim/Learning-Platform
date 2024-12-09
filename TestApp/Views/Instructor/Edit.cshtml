@@ -1,0 +1,46 @@
+@model TestApp.Models.Instructor
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Instructor</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="InstructorID" />
+            <div class="form-group">
+                <label asp-for="instructor_name" class="control-label"></label>
+                <input asp-for="instructor_name" class="form-control" />
+                <span asp-validation-for="instructor_name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="latest_qualification" class="control-label"></label>
+                <input asp-for="latest_qualification" class="form-control" />
+                <span asp-validation-for="latest_qualification" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="expertise_area" class="control-label"></label>
+                <input asp-for="expertise_area" class="form-control" />
+                <span asp-validation-for="expertise_area" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="email" class="control-label"></label>
+                <input asp-for="email" class="form-control" />
+                <span asp-validation-for="email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
