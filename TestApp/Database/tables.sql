@@ -1,11 +1,13 @@
 CREATE DATABASE ProjectDatabase4;
 USE ProjectDatabase4;
 
-CREATE TABLE Admin(
-    AdminID INT PRIMARY KEY  NOT NULL ,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    email VARCHAR(50),
+
+CREATE TABLE Admin
+(
+    AdminID       INT PRIMARY KEY NOT NULL IDENTITY (1, 1),
+    first_name    VARCHAR(50),
+    last_name     VARCHAR(50),
+    email         VARCHAR(50),
     adminPassword VARCHAR(50)
 )
 CREATE TABLE Learner
@@ -17,8 +19,8 @@ CREATE TABLE Learner
     birth_date          DATE,
     country             VARCHAR(50),
     cultural_background VARCHAR(50),
-    email VARCHAR(50),
-    adminPassword VARCHAR(50)
+    email               VARCHAR(50),
+    adminPassword       VARCHAR(50)
 );
 
 CREATE TABLE Skills
@@ -198,7 +200,7 @@ CREATE TABLE Instructor
     latest_qualification VARCHAR(50),
     expertise_area       VARCHAR(50),
     email                VARCHAR(100),
-    adminPassword VARCHAR(50)
+    adminPassword        VARCHAR(50)
 );
 
 CREATE TABLE Pathreview
@@ -445,7 +447,3 @@ CREATE TABLE QuestReward
     FOREIGN KEY (QuestID) REFERENCES Quest (QuestID) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (LearnerID) REFERENCES Learner (LearnerID) ON DELETE CASCADE ON UPDATE CASCADE,
 );
-
-
-
-

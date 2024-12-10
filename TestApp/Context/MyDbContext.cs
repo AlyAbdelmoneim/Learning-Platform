@@ -98,7 +98,7 @@ public partial class MyDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost,1433;Database=ProjectDatabase4;User Id=SA;Password=Password_123; TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Server=localhost,1433;Database=ProjectDatabase4;User Id=SA;Password=Password_123;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -107,6 +107,10 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => e.AchievementID).HasName("PK__Achievem__276330E023544A9B");
 
             entity.ToTable("Achievement");
+
+            entity.HasIndex(e => e.BadgeID, "IX_Achievement_BadgeID");
+
+            entity.HasIndex(e => e.LearnerID, "IX_Achievement_LearnerID");
 
             entity.Property(e => e.achievement_description)
                 .HasMaxLength(50)
@@ -126,11 +130,10 @@ public partial class MyDbContext : DbContext
 
         modelBuilder.Entity<Admin>(entity =>
         {
-            entity.HasKey(e => e.AdminID).HasName("PK__Admin__719FE4E8E80A2793");
+            entity.HasKey(e => e.AdminID).HasName("PK__Admin__719FE4E8141F71F8");
 
             entity.ToTable("Admin");
 
-            entity.Property(e => e.AdminID).ValueGeneratedNever();
             entity.Property(e => e.adminPassword)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -148,6 +151,8 @@ public partial class MyDbContext : DbContext
         modelBuilder.Entity<Assessment>(entity =>
         {
             entity.HasKey(e => e.ID).HasName("PK__Assessme__3214EC276EE946BA");
+
+            entity.HasIndex(e => new { e.ModuleID, e.CourseID }, "IX_Assessments_ModuleID_CourseID");
 
             entity.Property(e => e.ID).ValueGeneratedNever();
             entity.Property(e => e.assessment_description)
@@ -206,6 +211,8 @@ public partial class MyDbContext : DbContext
 
             entity.ToTable("ContentLibrary");
 
+            entity.HasIndex(e => new { e.ModuleID, e.CourseID }, "IX_ContentLibrary_ModuleID_CourseID");
+
             entity.Property(e => e.ID).ValueGeneratedNever();
             entity.Property(e => e.Title)
                 .HasMaxLength(100)
@@ -263,6 +270,7 @@ public partial class MyDbContext : DbContext
                     {
                         j.HasKey("CourseID", "Prereq").HasName("PK__CoursePr__F8693C2C7CB310D2");
                         j.ToTable("CoursePrerequisite");
+                        j.HasIndex(new[] { "Prereq" }, "IX_CoursePrerequisite_Prereq");
                     });
 
             entity.HasMany(d => d.Prereqs).WithMany(p => p.Courses)
@@ -279,6 +287,7 @@ public partial class MyDbContext : DbContext
                     {
                         j.HasKey("CourseID", "Prereq").HasName("PK__CoursePr__F8693C2C7CB310D2");
                         j.ToTable("CoursePrerequisite");
+                        j.HasIndex(new[] { "Prereq" }, "IX_CoursePrerequisite_Prereq");
                     });
         });
 
@@ -287,6 +296,10 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => e.EnrollmentID).HasName("PK__Course_e__7F6877FB4136652D");
 
             entity.ToTable("Course_enrollment");
+
+            entity.HasIndex(e => e.CourseID, "IX_Course_enrollment_CourseID");
+
+            entity.HasIndex(e => e.LearnerID, "IX_Course_enrollment_LearnerID");
 
             entity.Property(e => e.enrollment_status)
                 .HasMaxLength(50)
@@ -309,6 +322,8 @@ public partial class MyDbContext : DbContext
 
             entity.ToTable("Discussion_forum");
 
+            entity.HasIndex(e => new { e.ModuleID, e.CourseID }, "IX_Discussion_forum_ModuleID_CourseID");
+
             entity.Property(e => e.forum_description).IsUnicode(false);
             entity.Property(e => e.forum_timestamp).HasColumnType("datetime");
             entity.Property(e => e.title)
@@ -326,6 +341,10 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => e.FeedbackID).HasName("PK__Emotiona__6A4BEDF63FB36D75");
 
             entity.ToTable("Emotional_feedback");
+
+            entity.HasIndex(e => e.LearnerID, "IX_Emotional_feedback_LearnerID");
+
+            entity.HasIndex(e => e.activityID, "IX_Emotional_feedback_activityID");
 
             entity.Property(e => e.emotional_state)
                 .HasMaxLength(50)
@@ -349,6 +368,8 @@ public partial class MyDbContext : DbContext
 
             entity.ToTable("Emotionalfeedback_review");
 
+            entity.HasIndex(e => e.InstructorID, "IX_Emotionalfeedback_review_InstructorID");
+
             entity.Property(e => e.review)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -367,6 +388,8 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => new { e.SurveyID, e.LearnerID }).HasName("PK__FilledSu__1332A052291DD5A1");
 
             entity.ToTable("FilledSurvey");
+
+            entity.HasIndex(e => e.LearnerID, "IX_FilledSurvey_LearnerID");
 
             entity.Property(e => e.Answer)
                 .HasMaxLength(50)
@@ -432,6 +455,7 @@ public partial class MyDbContext : DbContext
                     {
                         j.HasKey("InstructorID", "CourseID").HasName("PK__Teaches__F193DC63FFD0DBA8");
                         j.ToTable("Teaches");
+                        j.HasIndex(new[] { "CourseID" }, "IX_Teaches_CourseID");
                     });
         });
 
@@ -440,6 +464,10 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => e.LogID).HasName("PK__Interact__5E5499A85009EA78");
 
             entity.ToTable("Interaction_log");
+
+            entity.HasIndex(e => e.LearnerID, "IX_Interaction_log_LearnerID");
+
+            entity.HasIndex(e => e.activity_ID, "IX_Interaction_log_activity_ID");
 
             entity.Property(e => e.LogID).ValueGeneratedNever();
             entity.Property(e => e.action_type)
@@ -507,6 +535,8 @@ public partial class MyDbContext : DbContext
 
             entity.ToTable("LearnerDiscussion");
 
+            entity.HasIndex(e => e.LearnerID, "IX_LearnerDiscussion_LearnerID");
+
             entity.Property(e => e.discussion_time).HasColumnType("datetime");
             entity.Property(e => e.Post)
                 .HasMaxLength(50)
@@ -527,6 +557,8 @@ public partial class MyDbContext : DbContext
 
             entity.ToTable("LearnersCollaboration");
 
+            entity.HasIndex(e => e.QuestID, "IX_LearnersCollaboration_QuestID");
+
             entity.Property(e => e.completion_status)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -545,6 +577,8 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => new { e.LearnerID, e.QuestID, e.skill }).HasName("PK__Learners__36F2E77357749B39");
 
             entity.ToTable("LearnersMastery");
+
+            entity.HasIndex(e => new { e.QuestID, e.skill }, "IX_LearnersMastery_QuestID_skill");
 
             entity.Property(e => e.skill)
                 .HasMaxLength(50)
@@ -581,6 +615,8 @@ public partial class MyDbContext : DbContext
         {
             entity.HasKey(e => e.ActivityID).HasName("PK__Learning__45F4A7F166D8612F");
 
+            entity.HasIndex(e => new { e.ModuleID, e.CourseID }, "IX_Learning_activities_ModuleID_CourseID");
+
             entity.Property(e => e.activity_type)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -615,6 +651,7 @@ public partial class MyDbContext : DbContext
                     {
                         j.HasKey("GoalID", "LearnerID").HasName("PK__Learners__3C3540FE7EB443B8");
                         j.ToTable("LearnersGoals");
+                        j.HasIndex(new[] { "LearnerID" }, "IX_LearnersGoals_LearnerID");
                     });
         });
 
@@ -623,6 +660,8 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => e.pathID).HasName("PK__Learning__BFB8200A6BAFEF07");
 
             entity.ToTable("Learning_path");
+
+            entity.HasIndex(e => new { e.LearnerID, e.ProfileID }, "IX_Learning_path_LearnerID_ProfileID");
 
             entity.Property(e => e.adaptive_rules).IsUnicode(false);
             entity.Property(e => e.completion_status)
@@ -639,6 +678,8 @@ public partial class MyDbContext : DbContext
         modelBuilder.Entity<Module>(entity =>
         {
             entity.HasKey(e => new { e.ModuleID, e.CourseID }).HasName("PK__Modules__47E6A09F434026F9");
+
+            entity.HasIndex(e => e.CourseID, "IX_Modules_CourseID");
 
             entity.Property(e => e.Title)
                 .HasMaxLength(100)
@@ -675,6 +716,8 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => new { e.InstructorID, e.PathID }).HasName("PK__Pathrevi__11D776B83E82DF0D");
 
             entity.ToTable("Pathreview");
+
+            entity.HasIndex(e => e.PathID, "IX_Pathreview_PathID");
 
             entity.Property(e => e.review)
                 .HasMaxLength(50)
@@ -734,6 +777,10 @@ public partial class MyDbContext : DbContext
 
             entity.ToTable("QuestReward");
 
+            entity.HasIndex(e => e.LearnerID, "IX_QuestReward_LearnerID");
+
+            entity.HasIndex(e => e.QuestID, "IX_QuestReward_QuestID");
+
             entity.Property(e => e.Time_earned).HasColumnType("datetime");
 
             entity.HasOne(d => d.Learner).WithMany(p => p.QuestRewards)
@@ -754,6 +801,10 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => new { e.BoardID, e.LearnerID, e.CourseID }).HasName("PK__Ranking__C9D7F96CA16A33B7");
 
             entity.ToTable("Ranking");
+
+            entity.HasIndex(e => e.CourseID, "IX_Ranking_CourseID");
+
+            entity.HasIndex(e => e.LearnerID, "IX_Ranking_LearnerID");
 
             entity.HasOne(d => d.Board).WithMany(p => p.Rankings)
                 .HasForeignKey(d => d.BoardID)
@@ -801,6 +852,8 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => e.ID).HasName("PK__SkillPro__3214EC274706C606");
 
             entity.ToTable("SkillProgression");
+
+            entity.HasIndex(e => new { e.LearnerID, e.skill_name }, "IX_SkillProgression_LearnerID_skill_name");
 
             entity.Property(e => e.ID).ValueGeneratedNever();
             entity.Property(e => e.proficiency_level)
@@ -882,6 +935,7 @@ public partial class MyDbContext : DbContext
                     {
                         j.HasKey("NotificationID", "LearnerID").HasName("PK__Received__96B591FD57A0EC60");
                         j.ToTable("ReceivedNotification");
+                        j.HasIndex(new[] { "LearnerID" }, "IX_ReceivedNotification_LearnerID");
                     });
         });
 
@@ -890,6 +944,8 @@ public partial class MyDbContext : DbContext
             entity.HasKey(e => new { e.AssessmentID, e.LearnerID }).HasName("PK__Takenass__8B5147F1A2F864E5");
 
             entity.ToTable("Takenassessment");
+
+            entity.HasIndex(e => e.LearnerID, "IX_Takenassessment_LearnerID");
 
             entity.HasOne(d => d.Assessment).WithMany(p => p.Takenassessments)
                 .HasForeignKey(d => d.AssessmentID)

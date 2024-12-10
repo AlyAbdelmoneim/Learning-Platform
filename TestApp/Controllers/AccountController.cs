@@ -26,8 +26,11 @@ namespace TestApp.Controllers
 
         [HttpPost]
 [HttpPost]
+[HttpPost]
 public async Task<IActionResult> SignUp(SignUpViewModel model)
 {
+    Console.Write("I am here 123");
+    
     if (ModelState.IsValid)
     {
         // Check if password and confirm password match
@@ -36,20 +39,23 @@ public async Task<IActionResult> SignUp(SignUpViewModel model)
             ModelState.AddModelError("", "Passwords do not match.");
             return View(model); // Return to sign-up page if passwords don't match
         }
-
-        // Hash the password
-        var passwordHasher = new PasswordHasher<string>();
-        string hashedPassword = passwordHasher.HashPassword(model.Email, model.Password); // Hash password using email as identifier
+        Console.Write("after password match");
 
         // Check if the email already exists in any of the tables
         var existingAdmin = await _dbContext.Admins
             .FirstOrDefaultAsync(a => a.email == model.Email);
+        
+        Console.Write("after existing admin");
 
         var existingLearner = await _dbContext.Learners
             .FirstOrDefaultAsync(l => l.email == model.Email);
+        
+        Console.Write("after existing learner");
 
         var existingInstructor = await _dbContext.Instructors
             .FirstOrDefaultAsync(i => i.email == model.Email);
+        
+        Console.Write("after existing instructor");
 
         if (existingAdmin != null || existingLearner != null || existingInstructor != null)
         {
@@ -58,6 +64,7 @@ public async Task<IActionResult> SignUp(SignUpViewModel model)
         }
 
         // Add to the appropriate table based on the selected role
+        Console.Write("I am before switch");
         switch (model.Role)
         {
             case "Admin":
@@ -65,8 +72,9 @@ public async Task<IActionResult> SignUp(SignUpViewModel model)
                 {
                     first_name = model.Username,
                     email = model.Email,
-                    adminPassword = hashedPassword // Store the hashed password
+                    adminPassword = model.Password // Store the plain-text password
                 };
+                Console.Write("I am here");
                 _dbContext.Admins.Add(admin);
                 break;
 
@@ -75,7 +83,7 @@ public async Task<IActionResult> SignUp(SignUpViewModel model)
                 {
                     first_name = model.Username,
                     email = model.Email,
-                    adminPassword = hashedPassword // Store the hashed password
+                    adminPassword = model.Password // Store the plain-text password
                 };
                 _dbContext.Learners.Add(learner);
                 break;
@@ -85,7 +93,7 @@ public async Task<IActionResult> SignUp(SignUpViewModel model)
                 {
                     instructor_name = model.Username,
                     email = model.Email,
-                    adminPassword = hashedPassword // Store the hashed password
+                    adminPassword = model.Password // Store the plain-text password
                 };
                 _dbContext.Instructors.Add(instructor);
                 break;
@@ -94,6 +102,7 @@ public async Task<IActionResult> SignUp(SignUpViewModel model)
                 ModelState.AddModelError("", "Invalid role selected");
                 return View(model);
         }
+        Console.Write("I am after switch");
 
         // Save changes to the database
         await _dbContext.SaveChangesAsync();
@@ -105,6 +114,7 @@ public async Task<IActionResult> SignUp(SignUpViewModel model)
 
     return View(model); // Return the same view if model is invalid or errors exist
 }
+
 
 
 
