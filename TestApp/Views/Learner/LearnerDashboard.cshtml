@@ -1,0 +1,17 @@
+@model List<TestApp.Models.Learner> 
+
+<h1>Welcome to the Learner Dashboard!</h1>
+
+@if (Model != null && Model.Any())
+{
+    <ul>
+        @foreach (var learner in Model)
+        {
+            <li>@learner.first_name @learner.last_name</li> <!-- Replace with actual properties -->
+        }
+    </ul>
+}
+else
+{
+    <p>No learner data available.</p>
+}
