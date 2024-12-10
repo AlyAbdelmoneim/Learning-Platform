@@ -25,10 +25,18 @@ namespace TestApp.Controllers
         }
 
         [HttpPost]
+[HttpPost]
 public async Task<IActionResult> SignUp(SignUpViewModel model)
 {
     if (ModelState.IsValid)
     {
+        // Check if password and confirm password match
+        if (model.Password != model.ConfirmPassword)
+        {
+            ModelState.AddModelError("", "Passwords do not match.");
+            return View(model); // Return to sign-up page if passwords don't match
+        }
+
         // Hash the password
         var passwordHasher = new PasswordHasher<string>();
         string hashedPassword = passwordHasher.HashPassword(model.Email, model.Password); // Hash password using email as identifier
@@ -36,10 +44,10 @@ public async Task<IActionResult> SignUp(SignUpViewModel model)
         // Check if the email already exists in any of the tables
         var existingAdmin = await _dbContext.Admins
             .FirstOrDefaultAsync(a => a.email == model.Email);
-        
+
         var existingLearner = await _dbContext.Learners
             .FirstOrDefaultAsync(l => l.email == model.Email);
-        
+
         var existingInstructor = await _dbContext.Instructors
             .FirstOrDefaultAsync(i => i.email == model.Email);
 
@@ -92,11 +100,12 @@ public async Task<IActionResult> SignUp(SignUpViewModel model)
 
         // Ensure the redirection happens after saving data
         TempData["SuccessMessage"] = "Sign-up successful! Please log in.";
-        return RedirectToAction("Login", "AccountController"); // Redirect to Login page
+        return RedirectToAction("Login"); // Redirect to Login page
     }
 
     return View(model); // Return the same view if model is invalid or errors exist
 }
+
 
 
 
