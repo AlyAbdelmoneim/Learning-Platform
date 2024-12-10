@@ -15,6 +15,8 @@ public partial class Instructor
 
     public string? email { get; set; }
 
+    public string? adminPassword { get; set; }
+
     public virtual ICollection<Emotionalfeedback_review> Emotionalfeedback_reviews { get; set; } = new List<Emotionalfeedback_review>();
 
     public virtual ICollection<Pathreview> Pathreviews { get; set; } = new List<Pathreview>();

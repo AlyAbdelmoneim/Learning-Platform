@@ -22,10 +22,8 @@ namespace TestApp.Controllers
         // GET: Learner
         public async Task<IActionResult> Index()
         {
-            // example of using a stored procedure
-            // var learners = await _context.Learners.FromSqlRaw("EXECUTE dbo.ViewInfo @LearnerID = 1").ToListAsync();
-            // return View(learners);
-            return View(await _context.Learners.ToListAsync());
+            var learners = await _context.Learners.FromSqlRaw("EXECUTE dbo.ViewInfo @LearnerID = 2").ToListAsync();
+            return View(learners);
         }
 
         // GET: Learner/Details/5

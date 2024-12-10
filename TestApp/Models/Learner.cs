@@ -19,6 +19,10 @@ public partial class Learner
 
     public string? cultural_background { get; set; }
 
+    public string? email { get; set; }
+
+    public string? adminPassword { get; set; }
+
     public virtual ICollection<Achievement> Achievements { get; set; } = new List<Achievement>();
 
     public virtual ICollection<Course_enrollment> Course_enrollments { get; set; } = new List<Course_enrollment>();
