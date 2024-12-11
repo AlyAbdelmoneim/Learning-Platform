@@ -2,14 +2,12 @@
     ViewData["Title"] = "Learner Personalization Profile";
 }
 
-<h1>Personalization Profile for Learner: @Model.FirstOrDefault()?.Learner.first_name</h1>
+<h1>Personalization Profile for Learner</h1>
 
 <table class="table">
     <thead>
     <tr>
         <th>Profile ID</th>
-        <th>Detail</th>
-        <th>Actions</th>
     </tr>
     </thead>
     <tbody>
@@ -17,7 +15,6 @@
     {
         <tr>
             <td>@profile.ProfileID</td>
-            <td>@profile.Detail</td>
             <td>
                 <form method="post" action="@Url.Action("DeletePersonalization", "Admin", new { id = profile.ProfileID })" style="display:inline;">
                     <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this personalization?');">Delete</button>
