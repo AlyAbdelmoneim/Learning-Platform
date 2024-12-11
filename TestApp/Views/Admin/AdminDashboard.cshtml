@@ -3,6 +3,8 @@
 }
 
 <h2>Admin Dashboard</h2>
-<p>Welcome to the Admin Dashboard!</p>
 
-<!-- You can add more content here as needed -->
+<div class="admin-dashboard">
+    <button onclick="window.location.href='@Url.Action("LearnersPage", "Admin")'" class="btn btn-primary">View Learners</button>
+    <button onclick="window.location.href='@Url.Action("InstructorsPage", "Admin")'" class="btn btn-primary">View Instructors</button>
+</div>

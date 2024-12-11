@@ -25,8 +25,8 @@ namespace TestApp.Controllers
         [Route("Learner/PersonalizationProfile")]
         public IActionResult PersonalizationProfile()
         {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
             // Assuming you have a Personalizations table with a foreign key to the Learner
-            var learnerId = 1; // Replace with actual LearnerID (e.g., from session or authentication)
             var personalizations = _context.PersonalizationProfiles
                 .Where(p => p.LearnerID == learnerId)
                 .ToList();
