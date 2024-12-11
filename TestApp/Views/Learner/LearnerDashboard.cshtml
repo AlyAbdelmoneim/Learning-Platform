@@ -1,22 +1,53 @@
-@model List<TestApp.Models.Learner> 
+@model List<TestApp.Models.Learner>
+
+@{
+    ViewData["Title"] = "Learner Dashboard";
+}
 
 <h1>Welcome to the Learner Dashboard!</h1>
 
-<!-- Other Learner data -->
+<!-- Display success and error messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
 
-<a href="/Learner/PersonalizationProfile" class="btn btn-primary">Go to Personalization Profile</a>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
 
-
+<!-- Display learner details -->
 @if (Model != null && Model.Any())
 {
-    <ul>
-        @foreach (var learner in Model)
-        {
-            <li>@learner.first_name @learner.last_name</li> <!-- Replace with actual properties -->
-        }
-    </ul>
+    var learner = Model.FirstOrDefault();
+
+    <div class="learner-info">
+        <p><strong>Name:</strong> @learner.first_name @learner.last_name</p>
+        <p><strong>Email:</strong> @learner.email</p>
+        <p><strong>Gender:</strong> @learner.gender</p>
+        <p><strong>Date of Birth:</strong> @learner.birth_date?.ToString("yyyy-MM-dd")</p>
+        <p><strong>Cultural Background:</strong> @learner.cultural_background</p>
+    </div>
+
+    <!-- Edit button to go to the profile update page -->
+    <a asp-action="EditProfile" asp-controller="Learner" class="btn btn-primary">Edit Profile</a>
+
+    <!-- Button to go to Personalization Profile -->
+    <a asp-action="PersonalizationProfile" asp-controller="Learner" class="btn btn-info">Go to Personalization Profile</a>
 }
 else
 {
     <p>No learner data available.</p>
 }
+
+<!-- Delete Account Section -->
+<hr />
+<form asp-action="DeleteAccount" asp-controller="Learner" method="post"
+      onsubmit="return confirm('Are you sure you want to delete your account? This action is irreversible.');">
+    <button type="submit" class="btn btn-danger">Delete Account</button>
+</form>

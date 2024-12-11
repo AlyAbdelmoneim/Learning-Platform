@@ -76,15 +76,19 @@ namespace TestApp.Controllers
 
         // Delete Personalization Profile
         [HttpPost]
-        public IActionResult DeletePersonalizationProfile(int id)
+        public IActionResult DeletePersonalizationProfile(int id, int learnerId)
         {
-            var profile = _context.PersonalizationProfiles.Find(id);
+            var profile = _context.PersonalizationProfiles
+                .FirstOrDefault(p => p.ProfileID == id && p.LearnerID == learnerId);
+
             if (profile != null)
             {
                 _context.PersonalizationProfiles.Remove(profile);
                 _context.SaveChanges();
             }
-            return RedirectToAction("PersonalizationProfile", new { learnerId = profile.LearnerID });
+
+            return RedirectToAction("PersonalizationProfile", new { learnerId });
         }
+
     }
 }

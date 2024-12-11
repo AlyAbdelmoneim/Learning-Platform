@@ -1,0 +1,47 @@
+@model TestApp.Models.PersonalizationProfile
+
+@{
+    ViewData["Title"] = "Add Personalization Profile";
+}
+
+<h2>Add Personalization Profile</h2>
+
+<!-- Display success and error messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<form asp-action="AddPersonalizationProfile" method="post">
+    <input type="hidden" asp-for="LearnerID" />
+
+    <div class="form-group">
+        <label asp-for="Prefered_content_type"></label>
+        <input asp-for="Prefered_content_type" class="form-control" />
+        <span asp-validation-for="Prefered_content_type" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="emotional_state"></label>
+        <input asp-for="emotional_state" class="form-control" />
+        <span asp-validation-for="emotional_state" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="personality_type"></label>
+        <input asp-for="personality_type" class="form-control" />
+        <span asp-validation-for="personality_type" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary" formaction="/Learner/LearnerDashboard">Save</button>
+    <a asp-action="PersonalizationProfile" class="btn btn-secondary">Cancel</a>
+</form>

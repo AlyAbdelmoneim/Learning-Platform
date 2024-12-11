@@ -39,8 +39,9 @@ app.UseSession();
 
 app.UseAuthorization();
 
+// Set the default route to the Login action in the Account controller
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();

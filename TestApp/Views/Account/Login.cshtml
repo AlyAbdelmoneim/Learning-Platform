@@ -1,28 +1,29 @@
-@{
-    ViewData["Title"] = "Login";
+@model TestApp.Models.ViewModels.LoginViewModel
+
+<h1>Login</h1>
+
+<!-- Display error messages, if any -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
 }
 
-<h2>@ViewData["Title"]</h2>
-
+<!-- Login Form -->
 <form asp-action="Login" method="post">
     <div class="form-group">
-        <label for="Email">Email</label>
-        <input type="email" id="Email" name="Email" class="form-control" value="@Model.Email" required />
+        <label for="Email">Email:</label>
+        <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" required />
     </div>
-
     <div class="form-group">
-        <label for="Password">Password</label>
-        <input type="password" id="Password" name="Password" class="form-control" required />
+        <label for="Password">Password:</label>
+        <input type="password" class="form-control" id="Password" name="Password" required />
     </div>
-
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Login</button>
-    </div>
-
-    @if (!string.IsNullOrEmpty(ViewData["ErrorMessage"]?.ToString()))
-    {
-        <div class="alert alert-danger">
-            @ViewData["ErrorMessage"]
-        </div>
-    }
+    <button type="submit" class="btn btn-primary">Login</button>
 </form>
+
+<!-- Sign Up Link -->
+<p class="mt-3">
+    Don't have an account? <a href="@Url.Action("SignUp", "Account")">Go to Sign Up</a>
+</p>
