@@ -139,38 +139,45 @@ namespace TestApp.Controllers
 
         [HttpPost]
         [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // Check in the Admin table
+                // Check Admin table
                 var admin = await _dbContext.Admins
                     .FirstOrDefaultAsync(a => a.email == model.Email);
 
                 if (admin != null && admin.adminPassword == model.Password)
                 {
-                    return RedirectToAction("AdminDashboard", "Admin"); // Redirect to Admin dashboard
+                    HttpContext.Session.SetInt32("UserID", admin.AdminID); // Save Admin ID
+                    HttpContext.Session.SetString("UserRole", "Admin"); // Save Role
+                    return RedirectToAction("AdminDashboard", "Admin");
                 }
 
-                // Check in the Learner table
+                // Check Learner table
                 var learner = await _dbContext.Learners
                     .FirstOrDefaultAsync(l => l.email == model.Email);
 
                 if (learner != null && learner.adminPassword == model.Password)
                 {
-                    return RedirectToAction("LearnerDashboard", "Learner"); // Redirect to Learner dashboard
+                    HttpContext.Session.SetInt32("UserID", learner.LearnerID); // Save Learner ID
+                    HttpContext.Session.SetString("UserRole", "Learner"); // Save Role
+                    return RedirectToAction("LearnerDashboard", "Learner");
                 }
 
-                // Check in the Instructor table
+                // Check Instructor table
                 var instructor = await _dbContext.Instructors
                     .FirstOrDefaultAsync(i => i.email == model.Email);
 
                 if (instructor != null && instructor.adminPassword == model.Password)
                 {
-                    return RedirectToAction("InstructorDashboard", "Instructor"); // Redirect to Instructor dashboard
+                    HttpContext.Session.SetInt32("UserID", instructor.InstructorID); // Save Instructor ID
+                    HttpContext.Session.SetString("UserRole", "Instructor"); // Save Role
+                    return RedirectToAction("InstructorDashboard", "Instructor");
                 }
 
-                // If no match found, add an error
+                // If no match found
                 ModelState.AddModelError("", "Invalid login attempt");
             }
 

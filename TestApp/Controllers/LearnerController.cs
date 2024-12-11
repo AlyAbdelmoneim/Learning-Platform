@@ -9,8 +9,10 @@ namespace TestApp.Controllers
         private readonly MyDbContext _context = new MyDbContext();
         public IActionResult LearnerDashboard()
         {
+            
+            var learnerId = HttpContext.Session.GetInt32("UserID");
             // You can pass any data needed for the learner dashboard here
-            var data = _context.Learners.FromSqlRaw("EXEC dbo.ViewInfo @LearnerID = {0}", 1).ToList();
+            var data = _context.Learners.FromSqlRaw("EXEC dbo.ViewInfo @LearnerID = {0}", learnerId).ToList();
 
             // Debugging: Log or check if data is empty
             if (data.Count == 0)
@@ -35,7 +37,8 @@ namespace TestApp.Controllers
         [Route("Learner/DeletePersonalization/{id}")]
         public IActionResult DeletePersonalization(int id)
         {
-            var personalization = _context.PersonalizationProfiles.Find(id);
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            var personalization = _context.PersonalizationProfiles.Find(id, learnerId);
             if (personalization != null)
             {
                 _context.PersonalizationProfiles.Remove(personalization);

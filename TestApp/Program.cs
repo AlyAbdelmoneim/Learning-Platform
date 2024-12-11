@@ -6,8 +6,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Add database context
 builder.Services.AddDbContext<MyDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add session services
+builder.Services.AddDistributedMemoryCache(); // For storing session data
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Session timeout
+    options.Cookie.HttpOnly = true;                // Prevent client-side script access
+    options.Cookie.IsEssential = true;            // Ensure the cookie is essential
+});
 
 var app = builder.Build();
 
@@ -23,6 +33,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Enable session handling middleware
+app.UseSession();
 
 app.UseAuthorization();
 
