@@ -20,6 +20,32 @@ namespace TestApp.Controllers
 
             return View(data);
         }
+        [Route("Learner/PersonalizationProfile")]
+        public IActionResult PersonalizationProfile()
+        {
+            // Assuming you have a Personalizations table with a foreign key to the Learner
+            var learnerId = 1; // Replace with actual LearnerID (e.g., from session or authentication)
+            var personalizations = _context.PersonalizationProfiles
+                .Where(p => p.LearnerID == learnerId)
+                .ToList();
+
+            return View(personalizations);
+        }
+        [HttpPost]
+        [Route("Learner/DeletePersonalization/{id}")]
+        public IActionResult DeletePersonalization(int id)
+        {
+            var personalization = _context.PersonalizationProfiles.Find(id);
+            if (personalization != null)
+            {
+                _context.PersonalizationProfiles.Remove(personalization);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("PersonalizationProfile");
+        }
+
+
 
     }
 }

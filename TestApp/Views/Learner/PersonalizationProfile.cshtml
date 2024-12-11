@@ -1,0 +1,36 @@
+@model List<TestApp.Models.PersonalizationProfile>
+
+<h1>Personalization Profile</h1>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var profile in Model)
+        {
+            <tr>
+                <td>@profile.ProfileID</td>
+                <td>@profile.emotional_state</td>
+                <td>@profile.personality_type</td> <!-- Replace these with actual fields -->
+                <td>
+                    <form method="post" asp-action="DeletePersonalization" asp-route-id="@profile.ProfileID">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+<p>No personalization profiles found.</p>
+}
