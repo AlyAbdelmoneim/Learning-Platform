@@ -1,0 +1,35 @@
+@Model int
+
+@{
+    ViewData["Title"] = "Add Post";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<!-- Display success or error message if any -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<!-- Form to submit the post content -->
+<form method="post" asp-action="AddPost">
+    <!-- Hidden field to pass forumID to the POST method -->
+    <input type="hidden" name="forumID" value="@Model" />  <!-- Correct usage -->
+
+    <div class="form-group">
+        <label for="content">Content</label>
+        <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Submit</button>
+
+</form>

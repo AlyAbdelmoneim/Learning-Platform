@@ -1,0 +1,37 @@
+@model List<TestApp.Models.Module>
+
+<h1>Modules</h1>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Difficulty</th>
+            <th>Assessments</th>
+            <th>Content URL</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var module in Model)
+        {
+            <tr>
+                <td>@module.Title</td>
+                <td>@module.difficulty</td>
+                <td>@module.Assessments</td>
+                <td>@module.contentURL</td>
+                
+                <td>
+                    <a asp-action="DiscussionForums" asp-controller="Learner" asp-route-courseID="@module.CourseID" asp-route-moduleID="@module.ModuleID" class="btn btn-primary">View Discussion Forums</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Modules found.</p>
+}

@@ -287,7 +287,47 @@ namespace TestApp.Controllers
 
             return View(path); // Pass the learning paths to the view
         }
+        public IActionResult Courses()
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            var courses = _context.Courses.FromSqlRaw("Exec dbo.EnrolledCourses @LearnerID = {0}", learnerId).ToList();
+            return View(courses);
+        }
+        public IActionResult Modules(int courseID)
+        {
+            Console.WriteLine("Course ID: " + courseID);
+            var modules = _context.Modules.FromSqlRaw("Exec dbo.GetModulesForCourse @CourseID = {0}", courseID).ToList();
+            return View(modules);
+        }
+        public IActionResult DiscussionForums(int courseID, int moduleID)
+        {
+            var forums = _context.Discussion_forums.FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID).ToList();
+            return View(forums);
+        }
+        public IActionResult Posts(int forumID)
+        {
+            var posts = _context.LearnerDiscussions.FromSqlRaw("Exec dbo.GetPostsForForum @ForumID = {0}" , forumID).ToList();
+            var tuple = new Tuple<List<LearnerDiscussion>, int>(posts, forumID);
+            return View(tuple);
+        }
+        public IActionResult AddPost(int forumID)
+        {
+            Console.WriteLine("coming forum id: " + forumID);
+            return View(forumID); // Display the AddPost view
+        }
 
-
+        [HttpPost]
+        public IActionResult AddPost(String forumID, String content)
+        {
+            var learnerID = HttpContext.Session.GetInt32("UserID");
+            if (!learnerID.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            int forumID2 = Int32.Parse(forumID);
+            Console.WriteLine("forum id: " + forumID + " content: " + content);
+            _context.Database.ExecuteSqlRaw("EXECUTE dbo.Post @LearnerID = {0}, @DiscussionID = {1}, @Post = {2}", learnerID, forumID2, content);
+            return RedirectToAction("DiscussionForums");
+        }
     }
 }
