@@ -36,15 +36,36 @@ namespace TestApp.Controllers
             TempData["ErrorMessage"] = "You must be logged in to access the instructor dashboard.";
             return RedirectToAction("Login", "Account");  // Redirect to login page if no session
         }
+        
+        [HttpGet]
+        public IActionResult EditInstructorProfile()
+        {
+            var instructorId = HttpContext.Session.GetInt32("UserID");
+
+            if (instructorId.HasValue)
+            {
+                var instructor = _context.Instructors.FirstOrDefault(i => i.InstructorID == instructorId);
+                if (instructor != null)
+                {
+                    return View(instructor); // Pass the instructor model to the view
+                }
+            }
+
+            TempData["ErrorMessage"] = "Instructor not found.";
+            return RedirectToAction("InstructorDashboard");
+        }
+
 
 
         [HttpPost]
         [HttpPost]
         public IActionResult EditInstructorProfile(Instructor updatedInstructor)
         {
-            if (ModelState.IsValid)
+            var instructorId = HttpContext.Session.GetInt32("UserID");
+
+            if (ModelState.IsValid && instructorId.HasValue)
             {
-                var instructor = _context.Instructors.FirstOrDefault(i => i.InstructorID == updatedInstructor.InstructorID);
+                var instructor = _context.Instructors.FirstOrDefault(i => i.InstructorID == instructorId);
                 if (instructor != null)
                 {
                     instructor.instructor_name = updatedInstructor.instructor_name;
@@ -58,9 +79,10 @@ namespace TestApp.Controllers
                 }
             }
 
-            TempData["ErrorMessage"] = "Invalid profile data. Please check your inputs.";
+            TempData["ErrorMessage"] = "Invalid profile data for instructor. Please check your inputs.";
             return View(updatedInstructor);
         }
+
 
         [HttpPost]
         public IActionResult DeleteInstructorAccount(int instructorId)
