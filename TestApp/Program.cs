@@ -18,6 +18,10 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;                // Prevent client-side script access
     options.Cookie.IsEssential = true;            // Ensure the cookie is essential
 });
+builder.Services.AddDbContext<MyDbContext>(options =>
+    options.UseSqlServer("Server=localhost,1433;Database=ProjectDatabase6;User Id=SA;Password=Password_123;TrustServerCertificate=True")
+        .LogTo(Console.WriteLine, LogLevel.Information));
+
 
 var app = builder.Build();
 

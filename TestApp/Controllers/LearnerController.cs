@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TestApp.Context;
 using TestApp.Models;
 using System.Linq;
+using Microsoft.Data.SqlClient;
 
 namespace TestApp.Controllers
 {
@@ -86,11 +87,12 @@ namespace TestApp.Controllers
             // Redirect to the personalization profile page after deletion
             return RedirectToAction("PersonalizationProfile");
         }
+
         [HttpPost]
         [HttpPost]
         public IActionResult DeleteAccount()
         {
-            var learnerID  = HttpContext.Session.GetInt32("UserID");
+            var learnerID = HttpContext.Session.GetInt32("UserID");
             // var learnerIdString = HttpContext.Session.GetString("LearnerID");
             // if (string.IsNullOrEmpty(learnerIdString) || !int.TryParse(learnerIdString, out int learnerId))
             // {
@@ -98,8 +100,8 @@ namespace TestApp.Controllers
             //     return RedirectToAction("LearnerDashboard");
             // }
 
-             var learner = _context.Learners.FirstOrDefault(l => l.LearnerID == learnerID);
-            if (learner!= null)
+            var learner = _context.Learners.FirstOrDefault(l => l.LearnerID == learnerID);
+            if (learner != null)
             {
                 _context.Learners.Remove(learner);
                 _context.SaveChanges();
@@ -118,14 +120,15 @@ namespace TestApp.Controllers
             // Assuming the user is authenticated and their LearnerID is stored in the session
             var learnerId = HttpContext.Session.GetInt32("UserID");
             var learner = _context.Learners.FirstOrDefault(l => l.LearnerID == learnerId);
-    
+
             if (learner == null)
             {
                 return RedirectToAction("LearnerDashboard");
             }
-    
+
             return View(learner);
         }
+
         [HttpPost]
         public IActionResult EditProfile(Learner updatedLearner)
         {
@@ -149,6 +152,7 @@ namespace TestApp.Controllers
             TempData["ErrorMessage"] = "Invalid profile data. Please check your inputs.";
             return View(updatedLearner);
         }
+
         [HttpGet]
         [Route("Learner/AddPersonalizationProfile")]
         public IActionResult AddPersonalizationProfile()
@@ -173,11 +177,12 @@ namespace TestApp.Controllers
                 {
                     Console.WriteLine(error.ErrorMessage);
                 }
+
                 Console.WriteLine("wtf in not valid");
             }
+
             Console.WriteLine("wft3");
-            
-            
+
 
             return View(model);
         }
@@ -193,15 +198,20 @@ namespace TestApp.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+
             Console.Write("before is model valid");
-            if (ModelState.IsValid) {
-                newProfile.LearnerID = learnerId.Value; 
-                Console.WriteLine("value of learner id" + learnerId.Value);// Associate the profile with the current learner
+            if (ModelState.IsValid)
+            {
+                newProfile.LearnerID = learnerId.Value;
+                Console.WriteLine("value of learner id" +
+                                  learnerId.Value); // Associate the profile with the current learner
                 _context.PersonalizationProfiles.Add(newProfile);
                 _context.SaveChanges();
                 TempData["SuccessMessage"] = "Personalization profile added successfully.";
                 return RedirectToAction("PersonalizationProfile");
-            } else {
+            }
+            else
+            {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
                 {
                     Console.WriteLine(error.ErrorMessage);
@@ -212,6 +222,54 @@ namespace TestApp.Controllers
             TempData["ErrorMessage"] = "Failed to add personalization profile.";
             return View(newProfile); // Return to the form if validation fails
         }
+
+        public IActionResult LearnerGoals()
+        {
+            // Retrieve the learner ID from the session
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!learnerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account"); // Redirect to login if no learnerId is found in session
+            }
+            var goals = _context.Learning_goals.FromSqlRaw("EXEC dbo.MyGoals @LearnerID = {0}", learnerId).ToList();
+            return View(goals); // Pass the goals to the View
+        }
+        // GET: AddGoal
+        public IActionResult AddGoal()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult AddGoal(string GoalDescription, DateTime Deadline, string GoalStatus)
+        {
+            // Retrieve the learner ID from the session
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!learnerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account"); // Redirect to login if no learnerId is found in session
+            }
+
+            try
+            {
+                // Execute the stored procedure
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC CreateAndAssignGoal @LearnerID = {0}, @GoalStatus = {1}, @Deadline = {2}, @GoalDescription = {3}",
+                    learnerId.Value, GoalStatus, Deadline, GoalDescription);
+
+                TempData["SuccessMessage"] = "Goal added successfully!";
+                return RedirectToAction("LearnerGoals");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error adding goal: {ex.Message}";
+                return View();
+            }
+        }
+
+
+
+        
     }
-    
 }

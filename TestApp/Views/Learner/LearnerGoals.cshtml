@@ -1,0 +1,42 @@
+@model List<Learning_goal> 
+
+@{
+    ViewData["Title"] = "Learner Goals";
+}
+
+<h2>Learner Goals</h2>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Goal Description</th>
+            <th>Goal Status</th>
+            <th>Deadline</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var goal in Model)
+        {
+            <tr>
+                <td>@goal.goal_description</td>
+                <td>@goal.goal_status</td>
+                <td>@goal.deadline?.ToString("yyyy-MM-dd")</td> <!-- Format the deadline if not null -->
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No goals found for this learner.</p>
+}
+
+<div class="d-flex justify-content-between">
+    <a asp-action="AddGoal" asp-controller="Learner" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Goal
+    </a>
+</div>
+
+
