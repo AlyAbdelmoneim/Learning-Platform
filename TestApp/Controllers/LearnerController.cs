@@ -327,7 +327,7 @@ namespace TestApp.Controllers
             int forumID2 = Int32.Parse(forumID);
             Console.WriteLine("forum id: " + forumID + " content: " + content);
             _context.Database.ExecuteSqlRaw("EXECUTE dbo.Post @LearnerID = {0}, @DiscussionID = {1}, @Post = {2}", learnerID, forumID2, content);
-            return RedirectToAction("DiscussionForums");
+            return RedirectToAction("Posts", new { forumID = forumID2 });
         }
     }
 }
