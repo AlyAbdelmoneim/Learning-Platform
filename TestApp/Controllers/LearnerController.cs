@@ -153,6 +153,7 @@ namespace TestApp.Controllers
         [Route("Learner/AddPersonalizationProfile")]
         public IActionResult AddPersonalizationProfile()
         {
+            Console.WriteLine("wtf");
             // Check if the learner is logged in
             var learnerId = HttpContext.Session.GetInt32("UserID");
             if (!learnerId.HasValue)
@@ -165,6 +166,18 @@ namespace TestApp.Controllers
             {
                 LearnerID = learnerId.Value // Set the learner ID
             };
+            Console.WriteLine("wft2");
+            if (!ModelState.IsValid)
+            {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine(error.ErrorMessage);
+                }
+                Console.WriteLine("wtf in not valid");
+            }
+            Console.WriteLine("wft3");
+            
+            
 
             return View(model);
         }
@@ -199,10 +212,6 @@ namespace TestApp.Controllers
             TempData["ErrorMessage"] = "Failed to add personalization profile.";
             return View(newProfile); // Return to the form if validation fails
         }
-
-
-
-
     }
     
 }

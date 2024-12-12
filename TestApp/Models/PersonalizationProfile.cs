@@ -17,7 +17,6 @@ public partial class PersonalizationProfile
 
     public virtual ICollection<HealthCondition> HealthConditions { get; set; } = new List<HealthCondition>();
 
-    public virtual Learner Learner { get; set; } = null!;
 
     public virtual ICollection<Learning_path> Learning_paths { get; set; } = new List<Learning_path>();
 }
