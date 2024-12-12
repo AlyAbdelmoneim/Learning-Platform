@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TestApp.Context;
 using TestApp.Models;
 
@@ -99,6 +100,53 @@ namespace TestApp.Controllers
             TempData["ErrorMessage"] = "Instructor not found.";
             return RedirectToAction("InstructorDashboard", new { instructorId = instructorId });
         }
-    }
-    
+        [HttpGet]
+        public IActionResult LearnersPage()
+        {
+            var learners = _context.Learners.ToList();
+            return View(learners);
+        }
+        [HttpGet]
+        public IActionResult PersonalizationProfile(int learnerId)
+        {
+            var personalizationProfiles = _context.PersonalizationProfiles
+                .Where(p => p.LearnerID == learnerId)
+                .ToList();
+            return View(personalizationProfiles);
+        }
+        
+        public IActionResult AddPathToLearner(int learnerId, int profileId)
+        {
+            // Debugging: Ensure these values are received correctly in the controller
+            Console.WriteLine("learnerId: " + learnerId + " profileId: " + profileId);
+
+            // Pass these values to the view using ViewData or directly into the view
+            ViewData["LearnerId"] = learnerId;
+            ViewData["ProfileId"] = profileId;
+
+            return View();
+        }
+
+
+
+        [HttpPost]
+        public IActionResult AddPathToLearner(int LearnerId, int ProfileId, string CustomContent, string AdaptiveRules)
+        {
+            try
+            {
+                // Execute the stored procedure or logic to add a path to the learner
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC NewPath @LearnerID = {0}, @ProfileID = {1}, @completion_status = {2}, @custom_content = {3}, @adaptiverules = {4}",
+                    LearnerId, ProfileId, "New", CustomContent, AdaptiveRules);
+
+                TempData["SuccessMessage"] = "Path successfully added to learner!";
+                return RedirectToAction("LearnersPage", "Instructor");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error adding path: {ex.Message} \n\n learnerId: {LearnerId}, profileId: {ProfileId}, customContent: {CustomContent}, adaptiveRules: {AdaptiveRules}";
+                return View();
+            }
+        }
+    } 
 }
