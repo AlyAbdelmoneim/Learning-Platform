@@ -25,8 +25,13 @@
                 <td>@profile.personality_type</td>
                 <td>
                     <!-- Delete button -->
-                    <form method="post" asp-action="DeletePersonalization" asp-route-id="@profile.ProfileID">
+                    <form method="post" asp-action="DeletePersonalization" asp-route-id="@profile.ProfileID" style="display:inline;">
                         <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+
+                    <!-- Learning path button (Change to GET method) -->
+                    <form method="get" asp-action="LearningPath" asp-route-profileID="@profile.ProfileID" style="display:inline;">
+                        <button type="submit" class="btn btn-primary">See The Path</button>
                     </form>
                 </td>
             </tr>

@@ -267,9 +267,27 @@ namespace TestApp.Controllers
                 return View();
             }
         }
-
-
-
         
+        [Route("LearningPath/{profileID}")]
+        public IActionResult LearningPath(int profileID)
+        {
+            // Retrieve the learner ID from the session
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            Console.WriteLine("Received ProfileID: " + profileID);  // Debugging line
+
+            if (!learnerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account"); // Redirect to login if no learnerId is found in session
+            }
+
+            // Execute the stored procedure to retrieve learning path data
+            var path = _context.Learning_paths.FromSqlRaw("EXEC dbo.CurrentPath @LearnerID = {0}, @ProfileID = {1}", learnerId, profileID).ToList();
+            
+            Console.WriteLine("size of path" + path.Count + " for learner id" + learnerId + " and profile id" + profileID);
+
+            return View(path); // Pass the learning paths to the view
+        }
+
+
     }
 }

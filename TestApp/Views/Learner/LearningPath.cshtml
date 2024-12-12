@@ -1,0 +1,34 @@
+@model IEnumerable<TestApp.Models.Learning_path>
+
+@{
+    ViewData["Title"] = "Learning Path";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<!-- Display the learner's learning path -->
+<table class="table">
+    <thead>
+    <tr>
+        <th>Learning Path ID</th>
+        <th>Profile ID</th>
+        <th>Completion Status</th>
+        <th>Custom Content</th>
+        <th>Adaptive Rules</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var path in Model)
+    {
+        <tr>
+            <td>@path.pathID</td> <!-- Assuming LearningPathID is the primary key for LearningPath -->
+            <td>@path.ProfileID</td>
+            <td>@path.completion_status</td> <!-- Assuming CompletionStatus is a column in your LearningPaths table -->
+            <td>@path.custom_content</td> <!-- Assuming CustomContent is a column in your LearningPaths table -->
+            <td>@path.adaptive_rules</td> <!-- Assuming AdaptiveRules is a column in your LearningPaths table -->
+        </tr>
+    }
+    </tbody>
+</table>
+
+<!-- Optionally, add any action buttons or links here to interact with the learning path (e.g., set goals, track progress) -->
