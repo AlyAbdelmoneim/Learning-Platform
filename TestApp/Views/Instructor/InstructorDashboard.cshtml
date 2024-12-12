@@ -1,8 +1,24 @@
-@{
-    ViewData["Title"] = "Instructor Dashboard";
-}
+@model TestApp.Models.Instructor
 
-<h2>Instructor Dashboard</h2>
-<p>Welcome to the Instructor Dashboard!</p>
+<h2 class="text-center">Instructor Dashboard</h2>
 
-<!-- You can add more content here as needed -->
+<div class="card p-4 shadow-sm mb-4">
+    <h3>Profile Information</h3>
+    <p><strong>Name:</strong> @Model.instructor_name</p>
+    <p><strong>Latest Qualification:</strong> @Model.latest_qualification</p>
+    <p><strong>Expertise Area:</strong> @Model.expertise_area</p>
+    <p><strong>Email:</strong> @Model.email</p>
+</div>
+
+<div class="d-flex justify-content-between">
+    <form asp-controller="Instructor" asp-action="EditInstructorProfile" class="btn btn-info">
+        <input type="submit" value="Edit Info" />
+    </form>
+
+
+    <form method="post" action="@Url.Action("DeleteInstructorAccount", new { instructorId = Model.InstructorID })" onsubmit="return confirm('Are you sure you want to delete your account?')" class="d-inline">
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash-alt"></i> Delete Account
+        </button>
+    </form>
+</div>

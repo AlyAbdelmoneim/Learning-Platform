@@ -1,0 +1,19 @@
+<form method="post" enctype="multipart/form-data">
+    <div>
+        <label for="instructor_name">Instructor Name:</label>
+        <input type="text" id="instructor_name" name="instructor_name" value="@Model.instructor_name" required />
+    </div>
+    <div>
+        <label for="latest_qualification">Latest Qualification:</label>
+        <input type="text" id="latest_qualification" name="latest_qualification" value="@Model.latest_qualification" required />
+    </div>
+    <div>
+        <label for="expertise_area">Expertise Area:</label>
+        <input type="text" id="expertise_area" name="expertise_area" value="@Model.expertise_area" required />
+    </div>
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="@Model.email" required />
+    </div>
+    <button type="submit">Save Changes</button>
+</form>
