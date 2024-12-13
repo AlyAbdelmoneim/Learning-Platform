@@ -1,5 +1,5 @@
-CREATE DATABASE ProjectDatabase4;
-USE ProjectDatabase4;
+CREATE DATABASE database4;
+USE database4;
 
 
 CREATE TABLE Admin
