@@ -1,0 +1,72 @@
+﻿@model List<TestApp.Models.SystemNotification>
+
+<h1>Your Notifications</h1>
+
+<!-- Display confirmation messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Message</th>
+            <th>Timestamp</th>
+            <th>Urgency</th>
+            <th>Read Status</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var notification in Model)
+        {
+            <tr>
+                <td>@(notification.notification_message ?? "No Message")</td>
+                <td>@(notification.notification_timestamp?.ToShortDateString() ?? "Unknown Date")</td>
+                <td>@notification.urgency_level</td>
+                <td>@(notification.ReadStatus.GetValueOrDefault() ? "Read" : "Unread")</td>
+                <td>
+                    @if (!notification.ReadStatus.GetValueOrDefault())
+                    {
+                        <!-- If the notification is unread, show "Mark as Read" button -->
+                        <form asp-action="MarkNotificationAsRead" method="post" style="display:inline;">
+                            <input type="hidden" name="notificationId" value="@notification.ID" />
+                            <button type="submit" class="btn btn-primary">Mark as Read</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <!-- If the notification is read, show "Mark as UnRead" button -->
+                        <form asp-action="MarkNotificationAsUnRead" method="post" style="display:inline;">
+                            <input type="hidden" name="notificationId" value="@notification.ID" />
+                            <button type="submit" class="btn btn-primary">Mark as UnRead</button> <!-- Changed to btn-primary -->
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No notifications found.</p>
+}

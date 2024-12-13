@@ -329,5 +329,105 @@ namespace TestApp.Controllers
             _context.Database.ExecuteSqlRaw("EXECUTE dbo.Post @LearnerID = {0}, @DiscussionID = {1}, @Post = {2}", learnerID, forumID2, content);
             return RedirectToAction("Posts", new { forumID = forumID2 });
         }
+        
+        //new code
+        // View notifications for a learner
+        public IActionResult Notifications()
+        {
+            var learnerID = HttpContext.Session.GetInt32("UserID");
+            
+            if (!learnerID.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            var notifications = _context.SystemNotifications
+                .FromSqlRaw("EXEC dbo.GetNotifications @LearnerID = {0}", learnerID)
+                .ToList();
+            Console.WriteLine("EL COUNT AHOHHHHHH");
+            Console.WriteLine(notifications.Count);
+            Console.WriteLine(learnerID);
+            return View(notifications);
+        }
+
+        // Send reminders for upcoming goals
+        [HttpPost]
+        public IActionResult SendGoalReminders()
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!learnerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("GoalReminder", connection))
+                {
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@LearnerID", learnerId);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            TempData["Message"] = "Goal reminders sent successfully.";
+            return RedirectToAction("Notifications");
+        }
+
+        // Mark a notification as read
+        [HttpPost]
+        public IActionResult MarkNotificationAsRead(int notificationId)
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!learnerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("NotificationUpdate", connection))
+                {
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@LearnerID", learnerId);
+                    command.Parameters.AddWithValue("@NotificationID", notificationId);
+                    command.Parameters.AddWithValue("@ReadStatus", true);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            return RedirectToAction("Notifications");
+        }
+        public IActionResult MarkNotificationAsUnRead(int notificationId)
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!learnerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("NotificationUpdate", connection))
+                {
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@LearnerID", learnerId);
+                    command.Parameters.AddWithValue("@NotificationID", notificationId);
+                    command.Parameters.AddWithValue("@ReadStatus", false);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            return RedirectToAction("Notifications");
+        }
     }
 }
