@@ -295,5 +295,19 @@ namespace TestApp.Controllers
                 return View();
             }
         }
+
+        public IActionResult DeleteQuests1()
+        {
+            return View();
+        }
+
+        public IActionResult DeleteQuests(String criteria)
+        {
+            Console.WriteLine("coming Criteria: " + criteria);
+            _context.Database.ExecuteSqlRaw("EXEC CirteriaDelete @criteria = {0}", criteria);
+            TempData["SuccessMessage"] = "Quest deleted successfully!";
+            return RedirectToAction("Quests");
+        }
+        
     }
 }
