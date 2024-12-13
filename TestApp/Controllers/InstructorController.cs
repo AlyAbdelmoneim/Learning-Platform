@@ -148,5 +148,47 @@ namespace TestApp.Controllers
                 return View();
             }
         }
+        public IActionResult Courses(){
+            var courses = _context.Courses.FromSqlRaw("EXEC InstructorCourses {0}", HttpContext.Session.GetInt32("UserID")).ToList();
+            return View(courses);
+        }
+        public IActionResult Modules(int courseID)
+        {
+            Console.WriteLine("Course ID: " + courseID);
+            var modules = _context.Modules.FromSqlRaw("Exec dbo.GetModulesForCourse @CourseID = {0}", courseID).ToList();
+            return View(modules);
+        }
+        public IActionResult DiscussionForums(int courseID, int moduleID)
+        {
+            var forums = _context.Discussion_forums.FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID).ToList();
+            return View(forums);
+        }
+        public IActionResult Posts(int forumID)
+        {
+            var posts = _context.LearnerDiscussions.FromSqlRaw("Exec dbo.GetPostsForForum @ForumID = {0}" , forumID).ToList();
+            var tuple = new Tuple<List<LearnerDiscussion>, int>(posts, forumID);
+            return View(tuple);
+        }
+        public IActionResult AddDiscussionForum(int courseID, int moduleID)
+        {
+            ViewData["CourseID"] = courseID;
+            ViewData["ModuleID"] = moduleID;
+            return View();
+        }
+        [HttpPost]
+        public IActionResult AddDiscussionForum(Discussion_forum forum)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlRaw("Exec dbo.CreateDiscussion @ModuleID = {0}, @CourseID = {1}, @title = {2}, @description = {3}", forum.ModuleID, forum.CourseID, forum.title, forum.forum_description);
+                TempData["SuccessMessage"] = "Discussion forum added successfully!";
+                return RedirectToAction("DiscussionForums", new { courseID = forum.CourseID, moduleID = forum.ModuleID });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error adding discussion forum: " + ex.Message;
+                return View();
+            }
+        }
     } 
 }
