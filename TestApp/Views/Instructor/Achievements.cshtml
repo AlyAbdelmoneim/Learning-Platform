@@ -1,0 +1,36 @@
+@model List<TestApp.Models.Achievement>
+
+<h1>Learners Achievements</h1>
+
+<!-- Add button to create a new personalization profile -->
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Achievement ID</th>
+            <th>Achievement Type</th>
+            <th>Achievement Description</th>
+            <th>Date Earned</th>
+            <th>Learner ID</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var quest in Model)
+        {
+            <tr>
+                <td>@quest.AchievementID</td>
+                <td>@quest.achievement_type</td>
+                <td>@quest.achievement_description</td>
+                <td>@quest.date_earned</td>
+                <td>@quest.LearnerID</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Available Achievements</p>
+}
+<a asp-action="AddAchievement1" asp-controller="Instructor" class="btn btn-primary">Add Achievement</a>

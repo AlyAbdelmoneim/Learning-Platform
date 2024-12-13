@@ -19,7 +19,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;            // Ensure the cookie is essential
 });
 builder.Services.AddDbContext<MyDbContext>(options =>
-    options.UseSqlServer("Server=localhost,1433;Database=LMSF2;User Id=sa;Password=AmrKhaled2005;Encrypt=True;TrustServerCertificate=True;")
+    options.UseSqlServer("Server=localhost,1433;Database=ProjectDatabase6;User Id=SA;Password=Password_123;TrustServerCertificate=True")
         .LogTo(Console.WriteLine, LogLevel.Information));
 
 

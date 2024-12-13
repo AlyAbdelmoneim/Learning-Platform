@@ -56,7 +56,7 @@ namespace TestApp.Controllers
             TempData["ErrorMessage"] = "Instructor not found.";
             return RedirectToAction("InstructorDashboard");
         }
-        
+
         [HttpPost]
         public IActionResult EditInstructorProfile(Instructor updatedInstructor)
         {
@@ -126,7 +126,7 @@ namespace TestApp.Controllers
 
             return View();
         }
-        
+
         [HttpPost]
         public IActionResult AddPathToLearner(int LearnerId, int ProfileId, string CustomContent, string AdaptiveRules)
         {
@@ -227,7 +227,7 @@ namespace TestApp.Controllers
         public IActionResult UpdateDeadline1(int questsID)
         {
             Console.WriteLine("Coming Quest ID: " + questsID);
-            return View(new UpdatedDeadlineViewModel {questsID = questsID});
+            return View(new UpdatedDeadlineViewModel { questsID = questsID });
         }
 
         public IActionResult UpdateDeadline(UpdatedDeadlineViewModel model)
@@ -235,7 +235,6 @@ namespace TestApp.Controllers
             Console.WriteLine("Quest ID: " + model.questsID + " Deadline: " + model.deadline);
             try
             {
-                
                 _context.Database.ExecuteSqlRaw(
                     "EXEC DeadlineUpdate @QuestID = {0}, @deadline = {1}",
                     model.questsID, model.deadline);
@@ -307,6 +306,42 @@ namespace TestApp.Controllers
             _context.Database.ExecuteSqlRaw("EXEC CirteriaDelete @criteria = {0}", criteria);
             TempData["SuccessMessage"] = "Quest deleted successfully!";
             return RedirectToAction("Quests");
+        }
+
+        public IActionResult Achievements()
+        {
+            var achievements = _context.Achievements.FromSqlRaw("EXEC GetAllAchievements").ToList();
+            return View(achievements);
+        }
+
+        public IActionResult AddAchievement1()
+        {
+            return View();
+        }
+
+        public IActionResult AddAchievement(int learnerID, int badgeID, String description, DateTime dateEarned,
+            String type)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC NewAchievement @LearnerID = {0}, @BadgeID = {1}, @description = {2}, @date_earned = {3}, @type = {4}",
+                    learnerID, badgeID, description, dateEarned, type);
+                TempData["SuccessMessage"] = "Achievement added successfully!";
+                 SendNotification(learnerID, "New Achievement", "High");
+                return RedirectToAction("Achievements");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error adding achievement: " + ex.Message;
+                return View();
+            }
+        }
+
+        public void SendNotification(int learnerID, string message, string urgencyLeve)
+        {
+            _context.Database.ExecuteSqlRaw("EXEC SendNotification @LearnerID = {0}, @message = {1}, @urgencyLevel = {2}",
+                learnerID, message, urgencyLeve);
         }
         
     }
