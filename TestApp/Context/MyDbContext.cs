@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using TestApp.Models;
+using TestApp.Models.ViewModels;
 
 namespace TestApp.Context;
 
@@ -17,6 +18,9 @@ public partial class MyDbContext : DbContext
     }
 
     public virtual DbSet<Achievement> Achievements { get; set; }
+    
+    public DbSet<CollaborativeQuestsViewModel> CollaborativeQuestsViewModels { get; set; }
+    public DbSet<SkillMasteryViewModel> SkillMasteryViewModels { get; set; }
 
     public virtual DbSet<Admin> Admins { get; set; }
 
@@ -95,6 +99,7 @@ public partial class MyDbContext : DbContext
     public virtual DbSet<Takenassessment> Takenassessments { get; set; }
 
     public virtual DbSet<Target_trait> Target_traits { get; set; }
+    public virtual DbSet<UpdatedDeadlineViewModel> UpdatedDeadlineViewModels { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -102,6 +107,10 @@ public partial class MyDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<SkillMasteryViewModel>().HasNoKey();
+        modelBuilder.Entity<CollaborativeQuestsViewModel>().HasNoKey();
+        modelBuilder.Entity<UpdatedDeadlineViewModel>().HasNoKey();
+        
         modelBuilder.Entity<Achievement>(entity =>
         {
             entity.HasKey(e => e.AchievementID).HasName("PK__Achievem__276330E082B30C98");
@@ -913,9 +922,11 @@ public partial class MyDbContext : DbContext
                 .HasForeignKey(d => new { d.ModuleID, d.CourseID })
                 .HasConstraintName("FK__Target_traits__3D5E1FD2");
         });
+        
 
         OnModelCreatingPartial(modelBuilder);
     }
+    
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

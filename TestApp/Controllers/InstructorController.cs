@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TestApp.Context;
 using TestApp.Models;
+using TestApp.Models.ViewModels;
 
 namespace TestApp.Controllers
 {
@@ -25,7 +26,7 @@ namespace TestApp.Controllers
                 var instructor = _context.Instructors.FirstOrDefault(i => i.InstructorID == instructorId.Value);
                 if (instructor != null)
                 {
-                    return View(instructor);  // Pass the instructor model to the view
+                    return View(instructor); // Pass the instructor model to the view
                 }
                 else
                 {
@@ -35,9 +36,9 @@ namespace TestApp.Controllers
             }
 
             TempData["ErrorMessage"] = "You must be logged in to access the instructor dashboard.";
-            return RedirectToAction("Login", "Account");  // Redirect to login page if no session
+            return RedirectToAction("Login", "Account"); // Redirect to login page if no session
         }
-        
+
         [HttpGet]
         public IActionResult EditInstructorProfile()
         {
@@ -55,10 +56,7 @@ namespace TestApp.Controllers
             TempData["ErrorMessage"] = "Instructor not found.";
             return RedirectToAction("InstructorDashboard");
         }
-
-
-
-        [HttpPost]
+        
         [HttpPost]
         public IActionResult EditInstructorProfile(Instructor updatedInstructor)
         {
@@ -100,12 +98,14 @@ namespace TestApp.Controllers
             TempData["ErrorMessage"] = "Instructor not found.";
             return RedirectToAction("InstructorDashboard", new { instructorId = instructorId });
         }
+
         [HttpGet]
         public IActionResult LearnersPage()
         {
             var learners = _context.Learners.ToList();
             return View(learners);
         }
+
         [HttpGet]
         public IActionResult PersonalizationProfile(int learnerId)
         {
@@ -114,7 +114,7 @@ namespace TestApp.Controllers
                 .ToList();
             return View(personalizationProfiles);
         }
-        
+
         public IActionResult AddPathToLearner(int learnerId, int profileId)
         {
             // Debugging: Ensure these values are received correctly in the controller
@@ -126,9 +126,7 @@ namespace TestApp.Controllers
 
             return View();
         }
-
-
-
+        
         [HttpPost]
         public IActionResult AddPathToLearner(int LearnerId, int ProfileId, string CustomContent, string AdaptiveRules)
         {
@@ -144,45 +142,61 @@ namespace TestApp.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Error adding path: {ex.Message} \n\n learnerId: {LearnerId}, profileId: {ProfileId}, customContent: {CustomContent}, adaptiveRules: {AdaptiveRules}";
+                TempData["ErrorMessage"] =
+                    $"Error adding path: {ex.Message} \n\n learnerId: {LearnerId}, profileId: {ProfileId}, customContent: {CustomContent}, adaptiveRules: {AdaptiveRules}";
                 return View();
             }
         }
-        public IActionResult Courses(){
-            var courses = _context.Courses.FromSqlRaw("EXEC InstructorCourses {0}", HttpContext.Session.GetInt32("UserID")).ToList();
+
+        public IActionResult Courses()
+        {
+            var courses = _context.Courses
+                .FromSqlRaw("EXEC InstructorCourses {0}", HttpContext.Session.GetInt32("UserID")).ToList();
             return View(courses);
         }
+
         public IActionResult Modules(int courseID)
         {
             Console.WriteLine("Course ID: " + courseID);
-            var modules = _context.Modules.FromSqlRaw("Exec dbo.GetModulesForCourse @CourseID = {0}", courseID).ToList();
+            var modules = _context.Modules.FromSqlRaw("Exec dbo.GetModulesForCourse @CourseID = {0}", courseID)
+                .ToList();
             return View(modules);
         }
+
         public IActionResult DiscussionForums(int courseID, int moduleID)
         {
-            var forums = _context.Discussion_forums.FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID).ToList();
+            var forums = _context.Discussion_forums
+                .FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID)
+                .ToList();
             return View(forums);
         }
+
         public IActionResult Posts(int forumID)
         {
-            var posts = _context.LearnerDiscussions.FromSqlRaw("Exec dbo.GetPostsForForum @ForumID = {0}" , forumID).ToList();
+            var posts = _context.LearnerDiscussions.FromSqlRaw("Exec dbo.GetPostsForForum @ForumID = {0}", forumID)
+                .ToList();
             var tuple = new Tuple<List<LearnerDiscussion>, int>(posts, forumID);
             return View(tuple);
         }
+
         public IActionResult AddDiscussionForum(int courseID, int moduleID)
         {
             ViewData["CourseID"] = courseID;
             ViewData["ModuleID"] = moduleID;
             return View();
         }
+
         [HttpPost]
         public IActionResult AddDiscussionForum(Discussion_forum forum)
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("Exec dbo.CreateDiscussion @ModuleID = {0}, @CourseID = {1}, @title = {2}, @description = {3}", forum.ModuleID, forum.CourseID, forum.title, forum.forum_description);
+                _context.Database.ExecuteSqlRaw(
+                    "Exec dbo.CreateDiscussion @ModuleID = {0}, @CourseID = {1}, @title = {2}, @description = {3}",
+                    forum.ModuleID, forum.CourseID, forum.title, forum.forum_description);
                 TempData["SuccessMessage"] = "Discussion forum added successfully!";
-                return RedirectToAction("DiscussionForums", new { courseID = forum.CourseID, moduleID = forum.ModuleID });
+                return RedirectToAction("DiscussionForums",
+                    new { courseID = forum.CourseID, moduleID = forum.ModuleID });
             }
             catch (Exception ex)
             {
@@ -190,5 +204,96 @@ namespace TestApp.Controllers
                 return View();
             }
         }
-    } 
+
+        public IActionResult Quests()
+        {
+            return View();
+        }
+
+        public IActionResult SkillMasteryQuests()
+        {
+            var skillMasteryQuests =
+                _context.SkillMasteryViewModels.FromSqlRaw("EXEC GetAllSkillMasteryQuests").ToList();
+            return View(skillMasteryQuests);
+        }
+
+        public IActionResult CollaborativeQuests()
+        {
+            var collaborativeQuests = _context.CollaborativeQuestsViewModels
+                .FromSqlRaw("EXEC GetAllCollaborativeQuests").ToList();
+            return View(collaborativeQuests);
+        }
+
+        public IActionResult UpdateDeadline1(int questsID)
+        {
+            Console.WriteLine("Coming Quest ID: " + questsID);
+            return View(new UpdatedDeadlineViewModel {questsID = questsID});
+        }
+
+        public IActionResult UpdateDeadline(UpdatedDeadlineViewModel model)
+        {
+            Console.WriteLine("Quest ID: " + model.questsID + " Deadline: " + model.deadline);
+            try
+            {
+                
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC DeadlineUpdate @QuestID = {0}, @deadline = {1}",
+                    model.questsID, model.deadline);
+                TempData["SuccessMessage"] = "Deadline updated successfully!";
+                return RedirectToAction("CollaborativeQuests");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error updating deadline: " + ex.Message;
+                return RedirectToAction("CollaborativeQuests");
+            }
+        }
+
+        public IActionResult AddSkillMasteryQuest()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult AddSkillMasteryQuest(SkillMasteryViewModel quest)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC SkillMasteryQuest @difficulty_level = {0}, @criteria = {1}, @quest_description = {2}, @title = {3}, @skill = {4}",
+                    quest.difficulty_level, quest.criteria, quest.quest_description, quest.title, quest.skill);
+                TempData["SuccessMessage"] = "Skill mastery quest added successfully!";
+                return RedirectToAction("SkillMasteryQuests");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error adding skill mastery quest: " + ex.Message;
+                return View();
+            }
+        }
+
+        public IActionResult AddCollaborativeQuest()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult AddCollaborativeQuest(CollaborativeQuestsViewModel quest)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC CollaborativeQuest @difficulty_level = {0}, @criteria = {1}, @quest_description = {2}, @title = {3}, @Maxnumparticipants = {4}, @deadline = {5}",
+                    quest.difficulty_level, quest.criteria, quest.quest_description, quest.title,
+                    quest.max_num_participants, quest.deadline);
+                TempData["SuccessMessage"] = "Skill mastery quest added successfully!";
+                return RedirectToAction("CollaborativeQuests");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error adding skill mastery quest: " + ex.Message;
+                return View();
+            }
+        }
+    }
 }
