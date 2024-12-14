@@ -208,12 +208,24 @@ namespace TestApp.Controllers
             }
         }
         
-        [HttpGet]
+        
+        //the working one 
+        // [HttpGet]
+        // public IActionResult Notifications()
+        // {
+        //     var notifications = _context.SystemNotifications.ToList();
+        //     return View(notifications);
+        // }
+        
+        
+        //testing this one to show all notifications for the admin 
+        
         public IActionResult Notifications()
         {
-            var notifications = _context.SystemNotifications.ToList();
+            var notifications = _context.SystemNotifications.FromSqlRaw("EXEC dbo.ViewAllNotifications").ToList();
             return View(notifications);
         }
+        
 
         // Action to mark a notification as read
         [HttpPost]

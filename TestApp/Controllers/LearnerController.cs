@@ -414,7 +414,8 @@ namespace TestApp.Controllers
                 notification.ReadStatus = true;
                 _context.SaveChanges();
             }
-            return RedirectToAction("Index");
+
+            return RedirectToAction("Notifications");
         }
 
     }
