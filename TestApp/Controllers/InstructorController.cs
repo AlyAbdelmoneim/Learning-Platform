@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using TestApp.Context;
 using TestApp.Models;
@@ -351,22 +352,59 @@ namespace TestApp.Controllers
             return View(course);
         }
 
-public IActionResult AddModule(int courseID, string title, string difficulty, string contentURL, string trait, string contentType)
-{
-    try
-    {
-        _context.Database.ExecuteSqlRaw(
-            "EXEC AddNewModule @CourseID = {0}, @Title = {1}, @Difficulty = {2}, @ContentURL = {3}, @Trait = {4}, @ContentType = {5}",
-            courseID, title, difficulty, contentURL, trait, contentType);
-        TempData["SuccessMessage"] = "Module added successfully!";
-        return RedirectToAction("Modules", new { courseID = courseID });
-    }
-    catch (Exception ex)
-    {
+        public IActionResult AddModule(int courseID, string title, string difficulty, string contentURL, string trait,
+            string contentType)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC AddNewModule @CourseID = {0}, @Title = {1}, @Difficulty = {2}, @ContentURL = {3}, @Trait = {4}, @ContentType = {5}",
+                    courseID, title, difficulty, contentURL, trait, contentType);
+                TempData["SuccessMessage"] = "Module added successfully!";
+                return RedirectToAction("Modules", new { courseID = courseID });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error adding module: " + ex.Message);
+                return View("AddModule1", new IntDTO { Value = courseID });
+            }
+        }
         
-        Console.WriteLine("Error adding module: " + ex.Message);
-        return View("AddModule1", new IntDTO { Value = courseID });
-    }
-}
+        public IActionResult Leaderboard(int leaderboardId)
+        {
+            List<Ranking> leaderboard = new List<Ranking>();
+
+            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("LeaderboardRank", connection))
+                {
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@LeaderboardID", leaderboardId); // Pass the leaderboard ID
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            leaderboard.Add(new Ranking()
+                            {
+                                BoardID = leaderboardId,
+                                LearnerID = (int)reader["LearnerID"],
+                                rankNum = reader["rankNum"] as int?, // Nullable rankNum
+                                total_points = reader["total_points"] as int? // Nullable total_points
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Find the logged-in learner's rank
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            var currentLearner = leaderboard.FirstOrDefault(l => l.LearnerID == learnerId);
+            ViewBag.CurrentLearnerRank = currentLearner;
+
+            return View(leaderboard); // Pass the leaderboard data to the view
+        }
+
     }
 }
