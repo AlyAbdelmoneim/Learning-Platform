@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using TestApp.Context;
 using TestApp.Models;
@@ -376,5 +377,20 @@ namespace TestApp.Controllers
                 return View("AddModule1", new IntDTO { Value = courseID });
             }
         }
+
+        
+        public IActionResult Leaderboard(int leaderboardId)
+        {
+            Console.WriteLine("Leaderboard Id is " + leaderboardId);
+            var leaderboard = _context.RankingViewModels.FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
+
+            if (leaderboard == null || !leaderboard.Any())
+            {
+                return RedirectToAction("LearnerDashboard");
+            }
+
+            return View(leaderboard);
+        }
+
     }
 }

@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using TestApp.Context;
 using TestApp.Models;
 using System.Linq;
+
 using TestApp.Models.ViewModels;
+using Microsoft.Data.SqlClient;
 
 namespace TestApp.Controllers
 {
@@ -241,45 +243,96 @@ namespace TestApp.Controllers
                 return View();
             }
         }
-    
 
 
-    //the working one 
-    // [HttpGet]
-    // public IActionResult Notifications()
-    // {
-    //     var notifications = _context.SystemNotifications.ToList();
-    //     return View(notifications);
-    // }
+
+        //the working one 
+        // [HttpGet]
+        // public IActionResult Notifications()
+        // {
+        //     var notifications = _context.SystemNotifications.ToList();
+        //     return View(notifications);
+        // }
 
 
-    //testing this one to show all notifications for the admin 
+        //testing this one to show all notifications for the admin 
+        //
+        // public IActionResult Notifications()
+        // {
+        //     var notifications = _context.SystemNotifications.FromSqlRaw("EXEC dbo.ViewAllNotifications").ToList();
+        //     return View(notifications);
+        // }
+        //
+        //
+        // // Action to mark a notification as read
+        // [HttpPost]
+        // public IActionResult MarkAsRead(int notificationId)
+        // {
+        //     var notification = _context.SystemNotifications.FirstOrDefault(n => n.ID == notificationId);
+        //
+        //     if (notification == null)
+        //     {
+        //         TempData["ErrorMessage"] = "Notification not found.";
+        //         return RedirectToAction("Notifications");
+        //     }
+        //
+        //     notification.ReadStatus = true; // Mark the notification as read
+        //     _context.SaveChanges(); // Save changes to the database
+        //
+        //     TempData["SuccessMessage"] = "Notification marked as read.";
+        //     return RedirectToAction("Notifications"); // Redirect back to the notifications page
+        // }
 
-    public IActionResult Notifications()
-    {
-        var notifications = _context.SystemNotifications.FromSqlRaw("EXEC dbo.ViewAllNotifications").ToList();
-        return View(notifications);
-    }
-
-
-    // Action to mark a notification as read
-    [HttpPost]
-    public IActionResult MarkAsRead(int notificationId)
-    {
-        var notification = _context.SystemNotifications.FirstOrDefault(n => n.ID == notificationId);
-
-        if (notification == null)
+        public IActionResult Leaderboard(int leaderboardId)
         {
-            TempData["ErrorMessage"] = "Notification not found.";
-            return RedirectToAction("Notifications");
+            Console.WriteLine("Leaderboard Id is " + leaderboardId);
+            var leaderboard = _context.RankingViewModels
+                .FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
+
+            if (leaderboard == null || !leaderboard.Any())
+            {
+                return RedirectToAction("LeaderBoard");
+            }
+
+            return View(leaderboard);
         }
 
-        notification.ReadStatus = true; // Mark the notification as read
-        _context.SaveChanges(); // Save changes to the database
 
-        TempData["SuccessMessage"] = "Notification marked as read.";
-        return RedirectToAction("Notifications"); // Redirect back to the notifications page
+        //the working one 
+        // [HttpGet]
+        // public IActionResult Notifications()
+        // {
+        //     var notifications = _context.SystemNotifications.ToList();
+        //     return View(notifications);
+        // }
+
+
+        //testing this one to show all notifications for the admin 
+
+        public IActionResult Notifications()
+        {
+            var notifications = _context.SystemNotifications.FromSqlRaw("EXEC dbo.ViewAllNotifications").ToList();
+            return View(notifications);
+        }
+
+
+        // Action to mark a notification as read
+        [HttpPost]
+        public IActionResult MarkAsRead(int notificationId)
+        {
+            var notification = _context.SystemNotifications.FirstOrDefault(n => n.ID == notificationId);
+
+            if (notification == null)
+            {
+                TempData["ErrorMessage"] = "Notification not found.";
+                return RedirectToAction("Notifications");
+            }
+
+            notification.ReadStatus = true; // Mark the notification as read
+            _context.SaveChanges(); // Save changes to the database
+
+            TempData["SuccessMessage"] = "Notification marked as read.";
+            return RedirectToAction("Notifications"); // Redirect back to the notifications page
+        }
     }
-}
-
 }

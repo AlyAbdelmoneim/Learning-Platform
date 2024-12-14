@@ -423,5 +423,62 @@ namespace TestApp.Controllers
             return View(courses);
         }
         
+        [HttpGet]
+        public IActionResult AddEmotionalFeedback(int activityId)
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            if (!learnerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var model = new Emotional_feedback
+            {
+                activityID = activityId,
+                LearnerID = learnerId.Value
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult AddEmotionalFeedback(Emotional_feedback feedback)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(feedback);
+            }
+
+            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("AddEmotionalFeedback", connection))
+                {
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@LearnerID", feedback.LearnerID);
+                    command.Parameters.AddWithValue("@ActivityID", feedback.activityID);
+                    command.Parameters.AddWithValue("@EmotionalState", feedback.emotional_state);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            TempData["SuccessMessage"] = "Your feedback has been recorded successfully!";
+            return RedirectToAction("LearnerDashboard");
+        }
+        
+        public IActionResult Leaderboard(int leaderboardId)
+        {
+            Console.WriteLine("Leaderboard Id is " + leaderboardId);
+            var leaderboard = _context.RankingViewModels.FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
+
+            if (leaderboard == null)
+            {
+                return RedirectToAction("LearnerDashboard");
+            }
+
+            return View(leaderboard);
+        }
+
     }
 }

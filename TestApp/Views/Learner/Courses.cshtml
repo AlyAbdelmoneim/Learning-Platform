@@ -25,12 +25,14 @@
                 <td>@course.course_description</td>
                 <td>@course.credit_points</td>
                 <td>@course.difficulty_level</td>
-                
+
                 <td>
-                    <!-- Delete button --><!-- Delete button -->
-                    <a asp-action="Modules" asp-controller="Learner" asp-route-courseID="@course.CourseID" 
+                    <a asp-action="Modules" asp-controller="Learner" asp-route-courseID="@course.CourseID"
                        class="btn btn-primary">View Modules</a>
+                    <a asp-action="Leaderboard" asp-controller="Learner" asp-route-leaderboardId="@course.CourseID"
+                       class="btn btn-success">View Leaderboard</a>
                 </td>
+
             </tr>
         }
         </tbody>
