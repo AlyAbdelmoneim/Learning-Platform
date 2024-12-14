@@ -468,30 +468,29 @@ namespace TestApp.Controllers
             return View(Tuple.Create(collaborativeQuests, learnerQuests));
         }
 
-        public IActionResult JoinCollaborativeQuest(int questID)
-        {
-            var learnerID = HttpContext.Session.GetInt32("UserID");
-            if (!learnerID.HasValue)
-            {
-                RedirectToAction("Login", "Account");
-            }
-            Console.WriteLine("Coming quest id: " + questID);
+public IActionResult JoinCollaborativeQuest(int questID)
+{
+    var learnerID = HttpContext.Session.GetInt32("UserID");
+    if (!learnerID.HasValue)
+    {
+        return RedirectToAction("Login", "Account");
+    }
+    Console.WriteLine("Coming quest id: " + questID);
 
-            try
-            {
-                _context.Database.ExecuteSqlRaw("EXEC dbo.JoinQuest @LearnerID = {0}, @QuestID = {1}",
-                    learnerID,
-                    questID);
-                Console.WriteLine("Joined quest successfully");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                Console.WriteLine("Failed to join quest becuase " + e.Message);
-            }
-            // fix thisss , you are joining correctly but not redirecting to the correct page
-            return View("LearnerDashboard");
-        }
+    try
+    {
+        _context.Database.ExecuteSqlRaw("EXEC dbo.JoinQuest @LearnerID = {0}, @QuestID = {1}",
+            learnerID,
+            questID);
+        Console.WriteLine("Joined quest successfully");
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+        Console.WriteLine("Failed to join quest because " + e.Message);
+    }
+    return Redirect(Request.Headers["Referer"].ToString());
+}
 
         public IActionResult ViewParticipants(int questID)
         {
@@ -512,7 +511,6 @@ namespace TestApp.Controllers
             var learnerId = HttpContext.Session.GetInt32("UserID");
             var tracks = _context.ProgressViewModels.FromSqlRaw("EXEC dbo.QuestProgress @LearnerID = {0}", learnerId).ToList();
             return View(tracks);
-            
         }
     }
 }
