@@ -232,14 +232,17 @@ namespace TestApp.Controllers
             {
                 return RedirectToAction("Login", "Account"); // Redirect to login if no learnerId is found in session
             }
+
             var goals = _context.Learning_goals.FromSqlRaw("EXEC dbo.MyGoals @LearnerID = {0}", learnerId).ToList();
             return View(goals); // Pass the goals to the View
         }
+
         // GET: AddGoal
         public IActionResult AddGoal()
         {
             return View();
         }
+
         [HttpPost]
         public IActionResult AddGoal(string GoalDescription, DateTime Deadline, string GoalStatus)
         {
@@ -267,13 +270,13 @@ namespace TestApp.Controllers
                 return View();
             }
         }
-        
+
         [Route("LearningPath/{profileID}")]
         public IActionResult LearningPath(int profileID)
         {
             // Retrieve the learner ID from the session
             var learnerId = HttpContext.Session.GetInt32("UserID");
-            Console.WriteLine("Received ProfileID: " + profileID);  // Debugging line
+            Console.WriteLine("Received ProfileID: " + profileID); // Debugging line
 
             if (!learnerId.HasValue)
             {
@@ -281,35 +284,46 @@ namespace TestApp.Controllers
             }
 
             // Execute the stored procedure to retrieve learning path data
-            var path = _context.Learning_paths.FromSqlRaw("EXEC dbo.CurrentPath @LearnerID = {0}, @ProfileID = {1}", learnerId, profileID).ToList();
-            
-            Console.WriteLine("size of path" + path.Count + " for learner id" + learnerId + " and profile id" + profileID);
+            var path = _context.Learning_paths
+                .FromSqlRaw("EXEC dbo.CurrentPath @LearnerID = {0}, @ProfileID = {1}", learnerId, profileID).ToList();
+
+            Console.WriteLine("size of path" + path.Count + " for learner id" + learnerId + " and profile id" +
+                              profileID);
 
             return View(path); // Pass the learning paths to the view
         }
+
         public IActionResult Courses()
         {
             var learnerId = HttpContext.Session.GetInt32("UserID");
             var courses = _context.Courses.FromSqlRaw("Exec dbo.EnrolledCourses @LearnerID = {0}", learnerId).ToList();
             return View(courses);
         }
+
         public IActionResult Modules(int courseID)
         {
             Console.WriteLine("Course ID: " + courseID);
-            var modules = _context.Modules.FromSqlRaw("Exec dbo.GetModulesForCourse @CourseID = {0}", courseID).ToList();
+            var modules = _context.Modules.FromSqlRaw("Exec dbo.GetModulesForCourse @CourseID = {0}", courseID)
+                .ToList();
             return View(modules);
         }
+
         public IActionResult DiscussionForums(int courseID, int moduleID)
         {
-            var forums = _context.Discussion_forums.FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID).ToList();
+            var forums = _context.Discussion_forums
+                .FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID)
+                .ToList();
             return View(forums);
         }
+
         public IActionResult Posts(int forumID)
         {
-            var posts = _context.LearnerDiscussions.FromSqlRaw("Exec dbo.GetPostsForForum @ForumID = {0}" , forumID).ToList();
+            var posts = _context.LearnerDiscussions.FromSqlRaw("Exec dbo.GetPostsForForum @ForumID = {0}", forumID)
+                .ToList();
             var tuple = new Tuple<List<LearnerDiscussion>, int>(posts, forumID);
             return View(tuple);
         }
+
         public IActionResult AddPost(int forumID)
         {
             Console.WriteLine("coming forum id: " + forumID);
@@ -324,23 +338,25 @@ namespace TestApp.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+
             int forumID2 = Int32.Parse(forumID);
             Console.WriteLine("forum id: " + forumID + " content: " + content);
-            _context.Database.ExecuteSqlRaw("EXECUTE dbo.Post @LearnerID = {0}, @DiscussionID = {1}, @Post = {2}", learnerID, forumID2, content);
+            _context.Database.ExecuteSqlRaw("EXECUTE dbo.Post @LearnerID = {0}, @DiscussionID = {1}, @Post = {2}",
+                learnerID, forumID2, content);
             return RedirectToAction("Posts", new { forumID = forumID2 });
         }
-        
+
         //new code
         // View notifications for a learner
         public IActionResult Notifications()
         {
             var learnerID = HttpContext.Session.GetInt32("UserID");
-            
+
             if (!learnerID.HasValue)
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             var notifications = _context.SystemNotifications
                 .FromSqlRaw("EXEC dbo.GetNotifications @LearnerID = {0}", learnerID)
                 .ToList();
@@ -404,6 +420,7 @@ namespace TestApp.Controllers
 
             return RedirectToAction("Notifications");
         }
+
         public IActionResult MarkNotificationAsUnRead(int notificationId)
         {
             var learnerId = HttpContext.Session.GetInt32("UserID");
@@ -428,6 +445,74 @@ namespace TestApp.Controllers
             }
 
             return RedirectToAction("Notifications");
+        }
+
+        public IActionResult CollaborativeQuests()
+        {
+            var learnerID = HttpContext.Session.GetInt32("UserID");
+            if (!learnerID.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var collaborativeQuests = _context.CollaborativeQuestsViewModels
+                .FromSqlRaw("EXEC dbo.GetAllCollaborativeQuests").ToList();
+            var learnerQuests = _context.CollaborativeQuestsViewModels
+                .FromSqlRaw("EXEC dbo.GetLearnerCollaborativeQuests @LearnerID = {0}", learnerID)
+                .AsEnumerable()
+                .Select(lq => lq.QuestID).ToList();
+
+
+            Console.WriteLine("collaborativeQuests count: " + collaborativeQuests.Count + " learnerQuests count: " +
+                              learnerQuests.Count);
+            return View(Tuple.Create(collaborativeQuests, learnerQuests));
+        }
+
+        public IActionResult JoinCollaborativeQuest(int questID)
+        {
+            var learnerID = HttpContext.Session.GetInt32("UserID");
+            if (!learnerID.HasValue)
+            {
+                RedirectToAction("Login", "Account");
+            }
+            Console.WriteLine("Coming quest id: " + questID);
+
+            try
+            {
+                _context.Database.ExecuteSqlRaw("EXEC dbo.JoinQuest @LearnerID = {0}, @QuestID = {1}",
+                    learnerID,
+                    questID);
+                Console.WriteLine("Joined quest successfully");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine("Failed to join quest becuase " + e.Message);
+            }
+            // fix thisss , you are joining correctly but not redirecting to the correct page
+            return View("LearnerDashboard");
+        }
+
+        public IActionResult ViewParticipants(int questID)
+        {
+            var learnerID = HttpContext.Session.GetInt32("UserID");
+            if (!learnerID.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var participants = _context.Learners
+                .FromSqlRaw("EXEC dbo.GetColleaguesInQuest @LearnerID = {0}, @QuestID = {1}", learnerID, questID)
+                .ToList();
+            return View(participants);
+        }
+
+        public IActionResult TrackProgress()
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            var tracks = _context.ProgressViewModels.FromSqlRaw("EXEC dbo.QuestProgress @LearnerID = {0}", learnerId).ToList();
+            return View(tracks);
+            
         }
     }
 }
