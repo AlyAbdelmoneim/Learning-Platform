@@ -1,26 +1,26 @@
-CREATE DATABASE database4;
-USE database4;
+CREATE DATABASE ProjectDatabase7;
+USE ProjectDatabase7;
 
 
-CREATE TABLE Admin
-(
-    AdminID       INT PRIMARY KEY NOT NULL IDENTITY (1, 1),
-    first_name    VARCHAR(50),
-    last_name     VARCHAR(50),
-    email         VARCHAR(50),
-    adminPassword VARCHAR(50)
+CREATE TABLE Admin(
+                      AdminID INT PRIMARY KEY  NOT NULL IDENTITY(1, 1),
+                      first_name VARCHAR(50),
+                      last_name VARCHAR(50),
+                      email VARCHAR(50),
+                      adminPassword VARCHAR(50)
 )
+
 CREATE TABLE Learner
 (
-    LearnerID           INT PRIMARY KEY NOT NULL,
+    LearnerID           INT PRIMARY KEY NOT NULL IDENTITY(1, 1),
     first_name          VARCHAR(50),
     last_name           VARCHAR(50),
     gender              CHAR(1),
     birth_date          DATE,
     country             VARCHAR(50),
     cultural_background VARCHAR(50),
-    email               VARCHAR(50),
-    adminPassword       VARCHAR(50)
+    email VARCHAR(50),
+    adminPassword VARCHAR(50)
 );
 
 CREATE TABLE Skills
@@ -42,7 +42,7 @@ CREATE TABLE LearningPreference
 CREATE TABLE PersonalizationProfiles
 (
     LearnerID             INT NOT NULL,
-    ProfileID             INT NOT NULL,
+    ProfileID             INT NOT NULL IDENTITY(1, 1),
     Prefered_content_type VARCHAR(50),
     emotional_state       VARCHAR(50),
     personality_type      VARCHAR(50),
@@ -82,7 +82,7 @@ CREATE TABLE CoursePrerequisite
 
 CREATE TABLE Modules
 (
-    ModuleID   INT NOT NULL,
+    ModuleID   INT IDENTITY(1, 1),
     CourseID   INT NOT NULL,
     Title      VARCHAR(100),
     difficulty VARCHAR(50),
@@ -195,12 +195,12 @@ CREATE TABLE Learning_path
 
 CREATE TABLE Instructor
 (
-    InstructorID         INT PRIMARY KEY NOT NULL,
+    InstructorID         INT PRIMARY KEY NOT NULL IDENTITY(1, 1),
     instructor_name      VARCHAR(100),
     latest_qualification VARCHAR(50),
     expertise_area       VARCHAR(50),
     email                VARCHAR(100),
-    adminPassword        VARCHAR(50)
+    adminPassword VARCHAR(50)
 );
 
 CREATE TABLE Pathreview
@@ -424,6 +424,7 @@ CREATE TABLE Discussion_forum
     FOREIGN KEY (ModuleID, CourseID) REFERENCES Modules (ModuleID, CourseID) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+
 CREATE TABLE LearnerDiscussion
 (
     ForumID         INT      NOT NULL,
@@ -447,3 +448,7 @@ CREATE TABLE QuestReward
     FOREIGN KEY (QuestID) REFERENCES Quest (QuestID) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (LearnerID) REFERENCES Learner (LearnerID) ON DELETE CASCADE ON UPDATE CASCADE,
 );
+
+
+
+

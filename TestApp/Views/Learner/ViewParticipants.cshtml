@@ -1,0 +1,25 @@
+@model List<TestApp.Models.Learner>
+
+@{
+    ViewData["Title"] = "Quest Collaborators";
+}
+<h2>Quest Collaborators</h2>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var learner in Model)
+    {
+        <tr>
+            <td>@learner.first_name @learner.last_name</td>
+            <td>@learner.email</td>
+
+        </tr>
+    }
+    </tbody>
+</table>

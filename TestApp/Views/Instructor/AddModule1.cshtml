@@ -1,0 +1,37 @@
+@Model TestApp.Models.ViewModels.IntDTO
+
+<h1>Modules</h1>
+
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="AddModule" method="post">
+    <input type="hidden" name="courseID" value="@Model.Value" />
+    <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label for="difficulty">Difficulty</label>
+        <input type="text" id="difficulty" name="difficulty" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label for="contentURL">Content URL</label>
+        <input type="url" id="contentURL" name="contentURL" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label for="trait">Trait</label>
+        <input type="text" id="trait" name="trait" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label for="contentType">Content Type</label>
+        <input type="text" id="contentType" name="contentType" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Add Module" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

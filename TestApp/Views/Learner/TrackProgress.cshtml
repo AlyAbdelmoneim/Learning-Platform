@@ -1,0 +1,25 @@
+@model IEnumerable<TestApp.Models.ViewModels.ProgressViewModel>
+
+@{
+    ViewData["Title"] = "Track Progress";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Quest ID</th>
+            <th>Completion Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.QuestID</td>
+                <td>@item.completion_status</td>
+            </tr>
+        }
+    </tbody>
+</table>
