@@ -1,3 +1,4 @@
+@model Tuple<TestApp.Models.ViewModels.IntDTO, TestApp.Models.ViewModels.IntDTO>
 @{
     ViewData["Title"] = "Add Discussion Forum";
 }
@@ -20,8 +21,8 @@
 
 <form method="post" asp-action="AddDiscussionForum">
     <!-- Hidden fields to pass CourseID and ModuleID -->
-    <input type="hidden" name="CourseID" value="@ViewData["CourseID"]" />
-    <input type="hidden" name="ModuleID" value="@ViewData["ModuleID"]" />
+    <input type="hidden" name="CourseID" value="@Model.Item1.Value" />
+    <input type="hidden" name="ModuleID" value="@Model.Item2.Value" />
 
     <div class="form-group">
         <label for="title">Discussion Title</label>

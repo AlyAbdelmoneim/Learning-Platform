@@ -19,11 +19,18 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;            // Ensure the cookie is essential
 });
 builder.Services.AddDbContext<MyDbContext>(options =>
-    options.UseSqlServer("Server=localhost,1433;Database=ProjectDatabase6;User Id=SA;Password=Password_123;TrustServerCertificate=True")
+    options.UseSqlServer("Server=localhost,1433;Database=ProjectDatabase7;User Id=SA;Password=Password_123;TrustServerCertificate=True")
         .LogTo(Console.WriteLine, LogLevel.Information));
 
 
+builder.Logging.ClearProviders(); // Optional: Clear default providers
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

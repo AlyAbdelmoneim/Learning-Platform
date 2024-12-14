@@ -102,8 +102,13 @@ namespace TestApp.Controllers
         [HttpGet]
         public IActionResult LearnersPage()
         {
-            var learners = _context.Learners.ToList();
+            var learners = _context.Learners.Where(l => l.email != null).ToList();
             return View(learners);
+        }
+        public IActionResult LearnersPastCourses(int learnerId)
+        {
+            var pastCourses = _context.Courses.FromSqlRaw("EXEC CompletedCourses @LearnerID = {0}", learnerId).ToList();
+            return View(pastCourses);
         }
 
         [HttpGet]
@@ -168,7 +173,10 @@ namespace TestApp.Controllers
             var forums = _context.Discussion_forums
                 .FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID)
                 .ToList();
-            return View(forums);
+            IntDTO course = new IntDTO { Value = courseID };
+            IntDTO module = new IntDTO { Value = moduleID };
+            var tuple = new Tuple<List<Discussion_forum>, IntDTO, IntDTO>(forums, course, module);
+            return View(tuple);
         }
 
         public IActionResult Posts(int forumID)
@@ -351,22 +359,22 @@ namespace TestApp.Controllers
             return View(course);
         }
 
-public IActionResult AddModule(int courseID, string title, string difficulty, string contentURL, string trait, string contentType)
-{
-    try
-    {
-        _context.Database.ExecuteSqlRaw(
-            "EXEC AddNewModule @CourseID = {0}, @Title = {1}, @Difficulty = {2}, @ContentURL = {3}, @Trait = {4}, @ContentType = {5}",
-            courseID, title, difficulty, contentURL, trait, contentType);
-        TempData["SuccessMessage"] = "Module added successfully!";
-        return RedirectToAction("Modules", new { courseID = courseID });
-    }
-    catch (Exception ex)
-    {
-        
-        Console.WriteLine("Error adding module: " + ex.Message);
-        return View("AddModule1", new IntDTO { Value = courseID });
-    }
-}
+        public IActionResult AddModule(int courseID, string title, string difficulty, string contentURL, string trait,
+            string contentType)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC AddNewModule @CourseID = {0}, @Title = {1}, @Difficulty = {2}, @ContentURL = {3}, @Trait = {4}, @ContentType = {5}",
+                    courseID, title, difficulty, contentURL, trait, contentType);
+                TempData["SuccessMessage"] = "Module added successfully!";
+                return RedirectToAction("Modules", new { courseID = courseID });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error adding module: " + ex.Message);
+                return View("AddModule1", new IntDTO { Value = courseID });
+            }
+        }
     }
 }

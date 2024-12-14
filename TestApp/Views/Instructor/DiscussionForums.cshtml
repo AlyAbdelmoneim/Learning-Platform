@@ -1,9 +1,8 @@
-@model List<TestApp.Models.Discussion_forum>
-
+@model Tuple<List<TestApp.Models.Discussion_forum>, TestApp.Models.ViewModels.IntDTO, TestApp.Models.ViewModels.IntDTO>
 <h1>Discussion Forums</h1>
 
 <!-- Add button to create a new personalization profile -->
-@if (Model != null && Model.Any())
+@if (Model != null && Model.Item1.Any())
 {
     <table class="table">
         <thead>
@@ -16,7 +15,7 @@
         </tr>
         </thead>
         <tbody>
-        @foreach (var forum in Model)
+        @foreach (var forum in Model.Item1)
         {
             <tr>
                 <td>@forum.title</td>
@@ -35,5 +34,8 @@ else
 {
     <p>No Discussions found.</p>
 }
-<a asp-action="AddDiscussionForum" asp-controller="Instructor" asp-route-courseID="@Model.First().CourseID" asp-route-moduleID="@Model.First().ModuleID" class="btn btn-primary">Add Discussion Forum</a>
+<a asp-action="AddDiscussionForum" asp-controller="Instructor"
+   asp-route-courseID="@Model.Item2.Value"
+   asp-route-moduleID="@Model.Item3.Value"
+   class="btn btn-primary">Add Discussion Forum</a>
 
