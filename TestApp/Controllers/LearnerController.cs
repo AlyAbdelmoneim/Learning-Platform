@@ -335,22 +335,22 @@ namespace TestApp.Controllers
         public IActionResult Notifications()
         {
             var learnerID = HttpContext.Session.GetInt32("UserID");
-            
+    
             if (!learnerID.HasValue)
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+    
             var notifications = _context.SystemNotifications
                 .FromSqlRaw("EXEC dbo.GetNotifications @LearnerID = {0}", learnerID)
                 .ToList();
-            Console.WriteLine("EL COUNT AHOHHHHHH");
-            Console.WriteLine(notifications.Count);
-            Console.WriteLine(learnerID);
+    
             return View(notifications);
         }
 
+
         // Send reminders for upcoming goals
+        [HttpPost]
         [HttpPost]
         public IActionResult SendGoalReminders()
         {
@@ -382,7 +382,7 @@ namespace TestApp.Controllers
         public IActionResult MarkNotificationAsRead(int notificationId)
         {
             var learnerId = HttpContext.Session.GetInt32("UserID");
-
+            Console.WriteLine("MarkNotificationAsRead called with ID: " + notificationId);
             if (!learnerId.HasValue)
             {
                 return RedirectToAction("Login", "Account");
@@ -404,30 +404,18 @@ namespace TestApp.Controllers
 
             return RedirectToAction("Notifications");
         }
-        public IActionResult MarkNotificationAsUnRead(int notificationId)
+        
+        [HttpPost]
+        public IActionResult MarkAsRead(int notificationId)
         {
-            var learnerId = HttpContext.Session.GetInt32("UserID");
-
-            if (!learnerId.HasValue)
+            var notification = _context.SystemNotifications.Find(notificationId);
+            if (notification != null)
             {
-                return RedirectToAction("Login", "Account");
+                notification.ReadStatus = true;
+                _context.SaveChanges();
             }
-
-            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
-            {
-                connection.Open();
-                using (SqlCommand command = new SqlCommand("NotificationUpdate", connection))
-                {
-                    command.CommandType = System.Data.CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@LearnerID", learnerId);
-                    command.Parameters.AddWithValue("@NotificationID", notificationId);
-                    command.Parameters.AddWithValue("@ReadStatus", false);
-
-                    command.ExecuteNonQuery();
-                }
-            }
-
-            return RedirectToAction("Notifications");
+            return RedirectToAction("Index");
         }
+
     }
 }

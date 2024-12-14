@@ -207,6 +207,34 @@ namespace TestApp.Controllers
                 return View();
             }
         }
+        
+        [HttpGet]
+        public IActionResult Notifications()
+        {
+            var notifications = _context.SystemNotifications.ToList();
+            return View(notifications);
+        }
+
+        // Action to mark a notification as read
+        [HttpPost]
+        public IActionResult MarkAsRead(int notificationId)
+        {
+            var notification = _context.SystemNotifications.FirstOrDefault(n => n.ID == notificationId);
+
+            if (notification == null)
+            {
+                TempData["ErrorMessage"] = "Notification not found.";
+                return RedirectToAction("Notifications");
+            }
+
+            notification.ReadStatus = true;  // Mark the notification as read
+            _context.SaveChanges();  // Save changes to the database
+
+            TempData["SuccessMessage"] = "Notification marked as read.";
+            return RedirectToAction("Notifications");  // Redirect back to the notifications page
+        }
+
+        
     }
     
 }

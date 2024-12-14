@@ -1,5 +1,21 @@
-﻿@model List<SystemNotification>
-<h2>Learner Notifications</h2>
+﻿<style>
+    .badge-success {
+        color: black; /* Text color for Read notifications */
+        background-color: #28a745; /* Default success background color */
+    }
+</style>
+
+<style>
+    .badge-warning {
+        color: black; /* Text color for Unread notifications */
+        background-color: #ffc107;
+    }
+</style>
+
+@model List<SystemNotification>
+
+<h2>Admin Notifications</h2>
+
 @if (Model != null && Model.Any())
 {
     <div class="table-responsive">
@@ -21,7 +37,7 @@
                     <td>
                         @if (!notification.ReadStatus.GetValueOrDefault())
                         {
-                            <span class="badge badge-warning">Not Read</span>
+                            <span class="badge badge-warning">Unread</span>
                         }
                         else
                         {
@@ -31,7 +47,7 @@
                     <td>
                         @if (!notification.ReadStatus.GetValueOrDefault())
                         {
-                            <form method="post" action="@Url.Action("MarkAsRead", "Learner")">
+                            <form method="post" action="@Url.Action("MarkAsRead", "Admin")">
                                 <input type="hidden" name="notificationId" value="@notification.ID" />
                                 <button type="submit" class="btn btn-primary btn-sm">
                                     Mark as Read
@@ -49,23 +65,3 @@ else
 {
     <p>No notifications found.</p>
 }
-
-<!-- Accompanying CSS Styles -->
-<style>
-    .badge-success {
-        color: black;
-        background-color: #28a745;
-    }
-    .badge-warning {
-        color: black;
-        background-color: #ffc107;
-    }
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #0056b3;
-    }
-</style>
