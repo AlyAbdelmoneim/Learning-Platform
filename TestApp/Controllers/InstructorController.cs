@@ -372,38 +372,15 @@ namespace TestApp.Controllers
         
         public IActionResult Leaderboard(int leaderboardId)
         {
-            List<Ranking> leaderboard = new List<Ranking>();
+            Console.WriteLine("Leaderboard Id is " + leaderboardId);
+            var leaderboard = _context.RankingViewModels.FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
 
-            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            if (leaderboard == null || !leaderboard.Any())
             {
-                connection.Open();
-                using (SqlCommand command = new SqlCommand("LeaderboardRank", connection))
-                {
-                    command.CommandType = System.Data.CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@LeaderboardID", leaderboardId); // Pass the leaderboard ID
-
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            leaderboard.Add(new Ranking()
-                            {
-                                BoardID = leaderboardId,
-                                LearnerID = (int)reader["LearnerID"],
-                                rankNum = reader["rankNum"] as int?, // Nullable rankNum
-                                total_points = reader["total_points"] as int? // Nullable total_points
-                            });
-                        }
-                    }
-                }
+                return RedirectToAction("LearnerDashboard");
             }
 
-            // Find the logged-in learner's rank
-            var learnerId = HttpContext.Session.GetInt32("UserID");
-            var currentLearner = leaderboard.FirstOrDefault(l => l.LearnerID == learnerId);
-            ViewBag.CurrentLearnerRank = currentLearner;
-
-            return View(leaderboard); // Pass the leaderboard data to the view
+            return View(leaderboard);
         }
 
     }
