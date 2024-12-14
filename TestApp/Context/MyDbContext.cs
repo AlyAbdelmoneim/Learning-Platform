@@ -101,10 +101,11 @@ public partial class MyDbContext : DbContext
     public virtual DbSet<Target_trait> Target_traits { get; set; }
     public virtual DbSet<UpdatedDeadlineViewModel> UpdatedDeadlineViewModels { get; set; }
     public virtual DbSet<ProgressViewModel> ProgressViewModels { get; set; }
+    public virtual DbSet<IntDTO> IntDtos { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost,1433;Database=ProjectDatabase6;User Id=SA;Password=Password_123;TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Server=localhost,1433;Database=ProjectDatabase7;User Id=SA;Password=Password_123;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -112,6 +113,7 @@ public partial class MyDbContext : DbContext
         modelBuilder.Entity<CollaborativeQuestsViewModel>().HasNoKey();
         modelBuilder.Entity<UpdatedDeadlineViewModel>().HasNoKey();
         modelBuilder.Entity<ProgressViewModel>().HasNoKey();
+        modelBuilder.Entity<IntDTO>().HasNoKey();
         
         modelBuilder.Entity<Achievement>(entity =>
         {

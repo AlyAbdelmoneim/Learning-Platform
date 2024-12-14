@@ -328,7 +328,7 @@ namespace TestApp.Controllers
                     "EXEC NewAchievement @LearnerID = {0}, @BadgeID = {1}, @description = {2}, @date_earned = {3}, @type = {4}",
                     learnerID, badgeID, description, dateEarned, type);
                 TempData["SuccessMessage"] = "Achievement added successfully!";
-                 SendNotification(learnerID, "New Achievement", "High");
+                SendNotification(learnerID, "New Achievement", "High");
                 return RedirectToAction("Achievements");
             }
             catch (Exception ex)
@@ -340,9 +340,33 @@ namespace TestApp.Controllers
 
         public void SendNotification(int learnerID, string message, string urgencyLeve)
         {
-            _context.Database.ExecuteSqlRaw("EXEC SendNotification @LearnerID = {0}, @message = {1}, @urgencyLevel = {2}",
+            _context.Database.ExecuteSqlRaw(
+                "EXEC SendNotification @LearnerID = {0}, @message = {1}, @urgencyLevel = {2}",
                 learnerID, message, urgencyLeve);
         }
+
+        public IActionResult AddModule1(int courseID)
+        {
+            IntDTO course = new IntDTO { Value = courseID };
+            return View(course);
+        }
+
+public IActionResult AddModule(int courseID, string title, string difficulty, string contentURL, string trait, string contentType)
+{
+    try
+    {
+        _context.Database.ExecuteSqlRaw(
+            "EXEC AddNewModule @CourseID = {0}, @Title = {1}, @Difficulty = {2}, @ContentURL = {3}, @Trait = {4}, @ContentType = {5}",
+            courseID, title, difficulty, contentURL, trait, contentType);
+        TempData["SuccessMessage"] = "Module added successfully!";
+        return RedirectToAction("Modules", new { courseID = courseID });
+    }
+    catch (Exception ex)
+    {
         
+        Console.WriteLine("Error adding module: " + ex.Message);
+        return View("AddModule1", new IntDTO { Value = courseID });
+    }
+}
     }
 }
