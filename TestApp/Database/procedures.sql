@@ -1,6 +1,5 @@
 --ADMIN
---1) 
-SELECT * FROM Learner
+--1)
 GO
 CREATE PROCEDURE ViewInfo
 @LearnerID INT
@@ -230,7 +229,7 @@ CREATE PROCEDURE EnrolledCourses
 @LearnerID INT
 AS
 BEGIN
-    SELECT c.CourseID, c.Title
+    SELECT c.CourseID, c.Title, c.course_description, c.credit_points, c.difficulty_level, c.learning_objective
     FROM Course_enrollment e
              INNER JOIN Course c ON e.CourseID = c.CourseID
     WHERE e.LearnerID = @LearnerID
@@ -294,7 +293,6 @@ END;
 GO
 
 --7
-DROP PROCEDURE IF EXISTS ViewMyDeviceCharge;
 GO
 CREATE PROCEDURE ActivityEmotionalFeedback
     @ActivityID INT,
@@ -441,12 +439,13 @@ GO
 --15
 GO
 CREATE PROCEDURE CurrentPath
-@LearnerID INT
+    @LearnerID INT,
+    @ProfileID INT
 AS
 BEGIN
-    SELECT pathID, completion_status
+    SELECT pathID, completion_status, custom_content, adaptive_rules, LearnerID, ProfileID
     FROM Learning_path
-    WHERE LearnerID = @LearnerID;
+    WHERE LearnerID = @LearnerID AND ProfileID = @ProfileID;
 END;
 GO
 
@@ -485,15 +484,9 @@ BEGIN
     SELECT QuestID, completion_status
     FROM LearnersCollaboration
     WHERE LearnerID = @LearnerID
-
-    UNION
-
-    -- Select data from Achievement
-    SELECT AchievementID AS QuestID, BadgeID AS completion_status
-    FROM Achievement
-    WHERE LearnerID = @LearnerID;
 END;
 GO
+
 --18
 GO
 CREATE PROCEDURE GoalReminder
@@ -663,10 +656,29 @@ BEGIN
 END;
 GO
 
+GO
+CREATE PROCEDURE SkillMasteryQuest
+    @difficulty_level varchar(50),
+    @criteria varchar(50),
+    @quest_description varchar(50),
+    @title varchar(100),
+    @skill varchar(50)
+
+AS
+BEGIN
+    INSERT INTO Quest(difficulty_level, criteria, quest_description, title)
+    VALUES (@difficulty_level, @criteria, @quest_description, @title)
+
+    DECLARE @QuestID INT = SCOPE_IDENTITY()
+
+    INSERT INTO Skill_Mastery(QuestID, skill)
+    VALUES (@QuestID, @skill)
+END;
+
 --8)
 GO
 CREATE PROCEDURE DeadlineUpdate
-    @QuestID INT, @deadline DATETIME
+    @QuestID INT, @deadline DATETIME2
 AS
 BEGIN
     UPDATE Collaborative
@@ -869,4 +881,227 @@ BEGIN
       AND EF.feedback_timestamp >= @TimePeriod
       AND EF.feedback_timestamp <= GETDATE()
 END;
+
+GO
+CREATE PROCEDURE MyGoals
+@LearnerID INT
+AS
+BEGIN
+    SELECT ID, goal_description, deadline, goal_status
+    FROM Learning_goal
+    WHERE ID IN (
+        SELECT GoalID
+        FROM LearnersGoals
+        WHERE LearnerID = @LearnerID
+    )
+END;
+
+
+
+
+GO
+CREATE PROCEDURE CreateAndAssignGoal
+    @LearnerID INT,
+    @GoalStatus VARCHAR(MAX),
+    @Deadline DATETIME,
+    @GoalDescription VARCHAR(MAX)
+AS
+BEGIN
+    DECLARE @NewGoalID INT;
+
+    -- Step 1: Create a new goal using the NewGoal procedure
+    -- Generate a new GoalID (you can modify this if you have a specific way of generating the ID)
+    SET @NewGoalID = (SELECT ISNULL(MAX(ID), 0) + 1 FROM Learning_goal); -- You can adjust this logic for ID generation
+
+    EXEC NewGoal @GoalID = @NewGoalID, @status = @GoalStatus, @deadline = @Deadline, @description = @GoalDescription;
+
+    -- Step 2: Assign the newly created goal to the learner using the AddGoal procedure
+    EXEC AddGoal @LearnerID = @LearnerID, @GoalID = @NewGoalID;
+
+    PRINT 'Goal Created and Assigned Successfully';
+END;
+GO
+
+
+GO
+
+CREATE PROCEDURE GetModulesForCourse
+@CourseID INT
+AS
+BEGIN
+    SELECT ModuleID, CourseID, Title, difficulty, contentURL
+    FROM Modules
+    WHERE CourseID = @CourseID;
+END;
+GO
+
+
+
+CREATE PROCEDURE GetDiscussionForums
+    @CourseID INT,
+    @ModuleID INT
+AS
+BEGIN
+    SELECT ForumID, ModuleID, CourseID, title, forum_description, forum_timestamp, last_active
+    FROM Discussion_forum
+    WHERE ModuleID = @ModuleID AND CourseID = @CourseID;
+END;
+
+
+GO
+CREATE PROCEDURE GetPostsForForum
+@ForumID INT
+AS
+BEGIN
+    SELECT ForumID, LearnerID, Post, discussion_time
+    FROM LearnerDiscussion
+    WHERE ForumID = @ForumID;
+END;
+
+
+GO
+CREATE PROCEDURE InstructorCourses
+@InstructorID INT
+AS
+BEGIN
+    SELECT C.CourseID, C.Title, C.course_description, C.credit_points, C.difficulty_level, C.learning_objective
+    FROM Course C
+             INNER JOIN Teaches T ON C.CourseID = T.CourseID
+    WHERE T.InstructorID = @InstructorID
+END;
+
+
+GO
+CREATE PROCEDURE GetAllCourses
+AS
+BEGIN
+    SELECT CourseID, Title, course_description, credit_points, difficulty_level, learning_objective
+    FROM Course;
+END;
+
+GO
+CREATE PROCEDURE GetAllCollaborativeQuests
+AS
+BEGIN
+    SELECT Q.QuestID, Q.difficulty_level, Q.criteria, Q.quest_description, Q.title, C.max_num_participants, C.deadline
+    FROM Quest Q
+             INNER JOIN Collaborative C ON Q.QuestID = C.QuestID;
+END;
+
+
+
+GO
+CREATE PROCEDURE GetAllSkillMasteryQuests
+AS
+BEGIN
+    SELECT Q.QuestID, Q.difficulty_level, Q.criteria, Q.quest_description, Q.title, SM.skill
+    FROM Quest Q
+             INNER JOIN Skill_Mastery SM ON Q.QuestID = SM.QuestID;
+END;
+
+
+
+
+GO
+CREATE PROCEDURE GetNotifications
+@LearnerID INT
+AS
+BEGIN
+    SELECT N.ID, N.notification_message, N.urgency_level, N.ReadStatus, N.notification_timestamp
+    FROM SystemNotification N
+             INNER JOIN ReceivedNotification R ON N.ID = R.NotificationID
+    WHERE R.LearnerID = @LearnerID;
+END;
+
+GO
+CREATE PROCEDURE GetAllAchievements
+AS
+BEGIN
+    SELECT A.AchievementID, A.LearnerID, A.BadgeID, A.achievement_description, A.date_earned, A.achievement_type
+    FROM Achievement A;
+END;
+
+
+
+
+GO
+CREATE PROCEDURE SendNotification
+    @LearnerID INT,
+    @Message VARCHAR(MAX),
+    @UrgencyLevel VARCHAR(50)
+AS
+BEGIN
+    DECLARE @NotificationID INT;
+
+    -- Insert new notification into SystemNotification table
+    -- Get the highest ID from SystemNotification and add one
+    DECLARE @NewNotificationID INT;
+    SELECT @NewNotificationID = ISNULL(MAX(ID), 0) + 1 FROM SystemNotification;
+    INSERT INTO SystemNotification (ID, notification_timestamp, notification_message, urgency_level, ReadStatus)
+    VALUES (@NewNotificationID, GETDATE(), @Message, @UrgencyLevel, 0);
+
+    -- Get the ID of the newly inserted notification
+    -- Insert into ReceivedNotification table
+    INSERT INTO ReceivedNotification (NotificationID, LearnerID)
+    VALUES (@NewNotificationID, @LearnerID);
+END;
+GO
+
+GO
+CREATE PROCEDURE GetColleaguesInQuest
+    @LearnerID INT,
+    @QuestID INT
+AS
+BEGIN
+    SELECT L.LearnerID, L.first_name, L.last_name, L.email, L.adminPassword, L.birth_date, L.gender, L.country, L.cultural_background
+    FROM Learner L
+             INNER JOIN LearnersCollaboration LC ON L.LearnerID = LC.LearnerID
+    WHERE LC.QuestID = @QuestID AND LC.LearnerID <> @LearnerID;
+END;
+GO
+
+CREATE PROCEDURE GetLearnerCollaborativeQuests
+@LearnerID INT
+AS
+BEGIN
+    SELECT Q.QuestID, Q.difficulty_level, Q.criteria, Q.quest_description, Q.title, C.max_num_participants, C.deadline
+    FROM Quest Q
+             INNER JOIN Collaborative C ON Q.QuestID = C.QuestID
+    WHERE Q.QuestID IN (
+        SELECT QuestID
+        FROM LearnersCollaboration
+        WHERE LearnerID = @LearnerID
+    );
+END;
+
+GO
+CREATE PROCEDURE AddNewModule
+    @CourseID INT,
+    @Title VARCHAR(100),
+    @Difficulty VARCHAR(50),
+    @ContentURL VARCHAR(255),
+    @Trait VARCHAR(50),
+    @ContentType VARCHAR(50)
+AS
+BEGIN
+    DECLARE @ModuleID INT;
+
+    -- Insert into Modules table
+    INSERT INTO Modules (CourseID, Title, difficulty, contentURL)
+    VALUES (@CourseID, @Title, @Difficulty, @ContentURL);
+
+    -- Get the newly inserted ModuleID
+    SET @ModuleID = SCOPE_IDENTITY();
+
+    -- Insert into Target_traits table
+    INSERT INTO Target_traits (ModuleID, CourseID, Trait)
+    VALUES (@ModuleID, @CourseID, @Trait);
+
+    -- Insert into ModuleContent table
+    INSERT INTO ModuleContent (ModuleID, CourseID, content_type)
+    VALUES (@ModuleID, @CourseID, @ContentType);
+
+    PRINT 'New module added successfully';
+END;
+GO
 
