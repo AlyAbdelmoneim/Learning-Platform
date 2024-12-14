@@ -247,38 +247,15 @@ namespace TestApp.Controllers
             return RedirectToAction("Notifications");  // Redirect back to the notifications page
         }
         
-        public IActionResult Leaderboard()
+        public IActionResult Leaderboard(int leaderboardId)
         {
-            List<Ranking> leaderboard = new List<Ranking>();
+            Console.WriteLine("Leaderboard Id is " + leaderboardId);
+            var leaderboard = _context.RankingViewModels.FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
 
-            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            if (leaderboard == null || !leaderboard.Any())
             {
-                connection.Open();
-                using (SqlCommand command = new SqlCommand("LeaderboardRank", connection))
-                {
-                    command.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            leaderboard.Add(new Ranking()
-                            {
-                                BoardID = (int)reader["BoardID"],
-                                LearnerID = (int)reader["LearnerID"],
-                                CourseID = (int)reader["CourseID"],
-                                rankNum = (int?)reader["rankNum"],
-                                total_points = (int?)reader["total_points"]
-                            });
-                        }
-                    }
-                }
+                return RedirectToAction("LeaderBoard");
             }
-
-            // Find the logged-in learner's rank
-            var learnerId = HttpContext.Session.GetInt32("UserID");
-            var currentLearner = leaderboard.FirstOrDefault(l => l.LearnerID == learnerId);
-            ViewBag.CurrentLearnerRank = currentLearner;
 
             return View(leaderboard);
         }

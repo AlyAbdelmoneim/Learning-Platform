@@ -1,0 +1,22 @@
+﻿@model TestApp.Models.Emotional_feedback
+
+<h2>Share Emotional Feedback</h2>
+
+<form asp-action="AddEmotionalFeedback" method="post">
+    <input type="hidden" name="LearnerID" value="@Model.LearnerID" />
+    <input type="hidden" name="ActivityID" value="@Model.activityID" />
+
+    <div class="form-group">
+        <label for="EmotionalState">How did you feel about this activity?</label>
+        <select id="EmotionalState" name="EmotionalState" class="form-control" required>
+            <option value="">Select your emotional state</option>
+            <option value="Happy">Happy</option>
+            <option value="Confident">Confident</option>
+            <option value="Confused">Confused</option>
+            <option value="Frustrated">Frustrated</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+</form>
