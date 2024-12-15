@@ -1,0 +1,43 @@
+@model Tuple<TestApp.Models.ViewModels.IntDTO, TestApp.Models.ViewModels.IntDTO>
+@{
+    ViewData["Title"] = "Add Learning Activity";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<!-- Display success or error message if any -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<form method="post" asp-action="AddLearningActivity">
+    <!-- Hidden fields to pass CourseID and ModuleID -->
+    <input type="hidden" name="courseId" value="@Model.Item1.Value" />
+    <input type="hidden" name="moduleId" value="@Model.Item2.Value" />
+
+    <div class="form-group">
+        <label for="type">Activity Type</label>
+        <input type="text" class="form-control" id="type" name="type" placeholder="Enter activity type" required />
+    </div>
+
+    <div class="form-group">
+        <label for="instructionDetails">Instruction Details</label>
+        <textarea class="form-control" id="instructionDetails" name="instructionDetails" rows="4" placeholder="Enter instruction details" required></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="maxScore">Max Score</label>
+        <input type="number" class="form-control" id="maxScore" name="maxScore" placeholder="Enter max score" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Activity</button>
+</form>

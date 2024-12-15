@@ -106,6 +106,7 @@ namespace TestApp.Controllers
             var learners = _context.Learners.Where(l => l.email != null).ToList();
             return View(learners);
         }
+
         public IActionResult LearnersPastCourses(int learnerId)
         {
             var pastCourses = _context.Courses.FromSqlRaw("EXEC CompletedCourses @LearnerID = {0}", learnerId).ToList();
@@ -378,19 +379,50 @@ namespace TestApp.Controllers
             }
         }
 
-        
         public IActionResult Leaderboard(int leaderboardId)
         {
             Console.WriteLine("Leaderboard Id is " + leaderboardId);
-            var leaderboard = _context.RankingViewModels.FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
-
-            if (leaderboard == null || !leaderboard.Any())
-            {
-                return RedirectToAction("LearnerDashboard");
-            }
-
+            var leaderboard = _context.RankingViewModels
+                .FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
             return View(leaderboard);
         }
 
+        public IActionResult Activities(int courseId, int moduleId)
+        {
+            var activities = _context.Learning_activities
+                .FromSqlRaw("EXEC dbo.GetActivities @CourseID = {0}, @ModuleID = {1}", courseId, moduleId).ToList();
+            IntDTO course = new IntDTO { Value = courseId };
+            IntDTO module = new IntDTO { Value = moduleId };
+            var tuple = new Tuple<List<Learning_activity>, IntDTO, IntDTO>(activities, course, module);
+            return View(tuple);
+        }
+
+        public IActionResult AddLearningActivity1(int courseId, int moduleId)
+        {
+            IntDTO course = new IntDTO { Value = courseId };
+            IntDTO module = new IntDTO { Value = moduleId };
+            var tuple = new Tuple<IntDTO, IntDTO>(course, module);
+            return View(tuple);
+        }
+
+        public IActionResult AddLearningActivity(int moduleId, int courseId, string type, string instructionDetails,
+            int maxScore)
+        {
+            Console.WriteLine("Coming values are " + moduleId + " " + courseId + " " + type + " " + instructionDetails +
+                              " " + maxScore);
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC NewActivity @CourseID = {0}, @ModuleID = {1}, @activitytype = {2}, @instructiondetails = {3}, @maxpoints = {4}",
+                    courseId, moduleId, type, instructionDetails, maxScore);
+                TempData["SuccessMessage"] = "Learning activity added successfully!";
+                return RedirectToAction("Activities", new { courseId = courseId, moduleId = moduleId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error adding learning activity: " + ex.Message;
+                return View("AddLearningActivity1");
+            }
+        }
     }
 }
