@@ -382,15 +382,32 @@ namespace TestApp.Controllers
         public IActionResult Leaderboard(int leaderboardId)
         {
             Console.WriteLine("Leaderboard Id is " + leaderboardId);
-            var leaderboard = _context.RankingViewModels.FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
-
-            if (leaderboard == null || !leaderboard.Any())
-            {
-                return RedirectToAction("LearnerDashboard");
-            }
+            var leaderboard = _context.RankingViewModels
+                .FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
 
             return View(leaderboard);
         }
+        
+        public IActionResult FeedbackTrends(int courseId, int moduleId, string timePeriod)
+        {
+            // Validate and parse the timePeriod
+            if (string.IsNullOrEmpty(timePeriod) || !DateTime.TryParse(timePeriod, out DateTime parsedTimePeriod))
+            {
+                TempData["ErrorMessage"] = "Invalid or missing time period. Please provide a valid date.";
+                return RedirectToAction("InstructorDashboard");
+            }
+
+            // Execute the stored procedure and map results to the view model
+            var feedbackTrends = _context.Emotional_feedbacks
+                .FromSqlRaw("EXEC dbo.EmotionalTrendAnalysisIns @CourseID = {0}, @ModuleID = {1}, @TimePeriod = {2}",
+                    courseId, moduleId, parsedTimePeriod)
+                .ToList();
+
+            return View(feedbackTrends);
+        }
+
+
+
 
     }
 }
