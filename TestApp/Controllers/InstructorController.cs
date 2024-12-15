@@ -392,5 +392,19 @@ namespace TestApp.Controllers
             return View(leaderboard);
         }
 
+        public IActionResult FeedbackTrends()
+        {
+            // Call the stored procedure without parameters
+            var feedbackTrends = _context.Emotional_feedbacks
+                .FromSqlRaw("EXEC dbo.EmotionalTrendAnalysisIns")
+                .ToList();
+
+            // Pass the results to the view
+            return View(feedbackTrends);
+        }
+
+
+
+
     }
 }
