@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using TestApp.Context;
 using TestApp.Models;
 using System.Linq;
-
 using TestApp.Models.ViewModels;
 using Microsoft.Data.SqlClient;
 
@@ -245,7 +244,6 @@ namespace TestApp.Controllers
         }
 
 
-
         //the working one 
         // [HttpGet]
         // public IActionResult Notifications()
@@ -333,6 +331,15 @@ namespace TestApp.Controllers
 
             TempData["SuccessMessage"] = "Notification marked as read.";
             return RedirectToAction("Notifications"); // Redirect back to the notifications page
+        }
+
+        public IActionResult FeedbackTrends()
+        {
+            var feedbackTrends = _context.Emotional_feedbacks
+                .FromSqlRaw("EXEC dbo.EmotionalTrendAnalysis")
+                .ToList();
+
+            return View(feedbackTrends);
         }
     }
 }

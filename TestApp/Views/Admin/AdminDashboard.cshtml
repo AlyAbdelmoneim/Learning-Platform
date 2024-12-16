@@ -41,12 +41,14 @@
             View Courses
         </button>
     </div>
-    
-    <!-- Add the View Notifications button here -->
     <div class="col-md-4 mb-3">
         <button onclick="window.location.href='@Url.Action("Notifications", "Admin")'" class="btn btn-primary w-100">
             View Notifications
         </button>
     </div>
-    
+    <div class="col-md-4 mb-3">
+        <button onclick="window.location.href='@Url.Action("FeedbackTrends", "Admin")'" class="btn btn-primary w-100">
+            <i class="fas fa-chart-line"></i> Emotional Feedback Trends
+        </button>
+    </div>
 </div>
