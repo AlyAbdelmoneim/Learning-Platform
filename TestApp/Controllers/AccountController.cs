@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using TestApp.Context;
 using TestApp.Models;
 using TestApp.Models.ViewModels;
-using TestApp.Context;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -21,51 +20,40 @@ namespace TestApp.Controllers
         [HttpGet]
         public IActionResult SignUp()
         {
-            return View(); // Renders the SignUp.cshtml view
+            return View(new SignUpViewModel()); // Renders the SignUp.cshtml view
         }
 
         [HttpPost]
-        [HttpPost]
-        [HttpPost]
         public async Task<IActionResult> SignUp(SignUpViewModel model)
         {
-            Console.Write("I am here 123");
-
             if (ModelState.IsValid)
             {
                 // Check if password and confirm password match
                 if (model.Password != model.ConfirmPassword)
                 {
-                    ModelState.AddModelError("", "Passwords do not match.");
-                    return View(model); // Return to sign-up page if passwords don't match
+                    ModelState.AddModelError("PasswordMismatch", "Passwords do not match.");
+                    return View(model);
                 }
 
-                Console.Write("after password match");
+                // Validate password strength (example: minimum length of 8 characters)
+                if (model.Password.Length < 8)
+                {
+                    ModelState.AddModelError("WeakPassword", "Password must be at least 8 characters long.");
+                    return View(model);
+                }
 
                 // Check if the email already exists in any of the tables
-                var existingAdmin = await _dbContext.Admins
-                    .FirstOrDefaultAsync(a => a.email == model.Email);
-
-                Console.Write("after existing admin");
-
-                var existingLearner = await _dbContext.Learners
-                    .FirstOrDefaultAsync(l => l.email == model.Email);
-
-                Console.Write("after existing learner");
-
-                var existingInstructor = await _dbContext.Instructors
-                    .FirstOrDefaultAsync(i => i.email == model.Email);
-
-                Console.Write("after existing instructor");
+                var existingAdmin = await _dbContext.Admins.FirstOrDefaultAsync(a => a.email == model.Email);
+                var existingLearner = await _dbContext.Learners.FirstOrDefaultAsync(l => l.email == model.Email);
+                var existingInstructor = await _dbContext.Instructors.FirstOrDefaultAsync(i => i.email == model.Email);
 
                 if (existingAdmin != null || existingLearner != null || existingInstructor != null)
                 {
-                    ModelState.AddModelError("", "Email is already taken.");
-                    return View(model); // Return to sign-up page if email is taken
+                    ModelState.AddModelError("EmailExists", "The provided email is already in use.");
+                    return View(model);
                 }
 
                 // Add to the appropriate table based on the selected role
-                Console.Write("I am before switch");
                 switch (model.Role)
                 {
                     case "Admin":
@@ -73,9 +61,8 @@ namespace TestApp.Controllers
                         {
                             first_name = model.Username,
                             email = model.Email,
-                            adminPassword = model.Password // Store the plain-text password
+                            adminPassword = model.Password
                         };
-                        Console.Write("I am here");
                         _dbContext.Admins.Add(admin);
                         break;
 
@@ -84,7 +71,7 @@ namespace TestApp.Controllers
                         {
                             first_name = model.Username,
                             email = model.Email,
-                            adminPassword = model.Password // Store the plain-text password
+                            adminPassword = model.Password
                         };
                         _dbContext.Learners.Add(learner);
                         break;
@@ -94,41 +81,34 @@ namespace TestApp.Controllers
                         {
                             instructor_name = model.Username,
                             email = model.Email,
-                            adminPassword = model.Password // Store the plain-text password
+                            adminPassword = model.Password
                         };
                         _dbContext.Instructors.Add(instructor);
                         break;
 
                     default:
-                        ModelState.AddModelError("", "Invalid role selected");
+                        ModelState.AddModelError("InvalidRole", "Invalid role selected.");
                         return View(model);
                 }
-
-                Console.Write("I am after switch");
 
                 // Save changes to the database
                 await _dbContext.SaveChangesAsync();
 
-                // Ensure the redirection happens after saving data
+                // Success message
                 TempData["SuccessMessage"] = "Sign-up successful! Please log in.";
-                return RedirectToAction("Login"); // Redirect to Login page
+                return RedirectToAction("Login");
             }
-            else if (!ModelState.IsValid)
+            else
             {
-                // Output ModelState errors for debugging
+                // Output ModelState errors for debugging (optional)
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
                 {
                     Console.WriteLine(error.ErrorMessage);
                 }
             }
 
-
-            return View(model); // Return the same view if model is invalid or errors exist
+            return View(model);
         }
-
-
-
-
 
         [HttpGet]
         public IActionResult Login()
@@ -136,55 +116,67 @@ namespace TestApp.Controllers
             return View(new LoginViewModel()); // Ensure the model is passed correctly to the view
         }
 
-
-        [HttpPost]
-        [HttpPost]
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
                 // Check Admin table
-                var admin = await _dbContext.Admins
-                    .FirstOrDefaultAsync(a => a.email == model.Email);
-
-                if (admin != null && admin.adminPassword == model.Password)
+                var admin = await _dbContext.Admins.FirstOrDefaultAsync(a => a.email == model.Email);
+                if (admin != null)
                 {
-                    HttpContext.Session.SetInt32("UserID", admin.AdminID); // Save Admin ID
-                    HttpContext.Session.SetString("UserRole", "Admin"); // Save Role
-                    return RedirectToAction("AdminDashboard", "Admin");
+                    if (admin.adminPassword == model.Password)
+                    {
+                        HttpContext.Session.SetInt32("UserID", admin.AdminID);
+                        HttpContext.Session.SetString("UserRole", "Admin");
+                        return RedirectToAction("AdminDashboard", "Admin");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("InvalidPassword", "Incorrect password for Admin.");
+                        return View(model);
+                    }
                 }
 
                 // Check Learner table
-                var learner = await _dbContext.Learners
-                    .FirstOrDefaultAsync(l => l.email == model.Email);
-
-                if (learner != null && learner.adminPassword == model.Password)
+                var learner = await _dbContext.Learners.FirstOrDefaultAsync(l => l.email == model.Email);
+                if (learner != null)
                 {
-                    HttpContext.Session.SetInt32("UserID", learner.LearnerID); // Save Learner ID
-                    HttpContext.Session.SetString("UserRole", "Learner"); // Save Role
-                    return RedirectToAction("LearnerDashboard", "Learner");
+                    if (learner.adminPassword == model.Password)
+                    {
+                        HttpContext.Session.SetInt32("UserID", learner.LearnerID);
+                        HttpContext.Session.SetString("UserRole", "Learner");
+                        return RedirectToAction("LearnerDashboard", "Learner");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("InvalidPassword", "Incorrect password for Learner.");
+                        return View(model);
+                    }
                 }
 
                 // Check Instructor table
-                var instructor = await _dbContext.Instructors
-                    .FirstOrDefaultAsync(i => i.email == model.Email);
-
-                if (instructor != null && instructor.adminPassword == model.Password)
+                var instructor = await _dbContext.Instructors.FirstOrDefaultAsync(i => i.email == model.Email);
+                if (instructor != null)
                 {
-                    HttpContext.Session.SetInt32("UserID", instructor.InstructorID); // Save Instructor ID
-                    HttpContext.Session.SetString("UserRole", "Instructor"); // Save Role
-                    return RedirectToAction("InstructorDashboard", "Instructor");
+                    if (instructor.adminPassword == model.Password)
+                    {
+                        HttpContext.Session.SetInt32("UserID", instructor.InstructorID);
+                        HttpContext.Session.SetString("UserRole", "Instructor");
+                        return RedirectToAction("InstructorDashboard", "Instructor");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("InvalidPassword", "Incorrect password for Instructor.");
+                        return View(model);
+                    }
                 }
 
-                // If no match found
-                ModelState.AddModelError("", "Invalid login attempt");
+                // Email not found in any table
+                ModelState.AddModelError("EmailNotFound", "No account associated with this email.");
             }
 
             return View(model);
         }
-
     }
 }
-
-

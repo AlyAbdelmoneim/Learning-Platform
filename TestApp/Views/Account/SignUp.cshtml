@@ -2,32 +2,48 @@
 
 <h2>Sign Up</h2>
 
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
 <form method="post">
     <div class="form-group">
         <label for="Username">Username</label>
-        <input type="text" class="form-control" id="Username" name="Username" required />
+        <input type="text" class="form-control" id="Username" name="Username" value="@Model.Username" required />
+        @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })
     </div>
     <div class="form-group">
         <label for="Email">Email</label>
-        <input type="email" class="form-control" id="Email" name="Email" required />
+        <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" required />
+        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
     </div>
     <div class="form-group">
         <label for="Password">Password</label>
-        <input type="password" class="form-control" id="Password" name="Password" />
+        <input type="password" class="form-control" id="Password" name="Password" required />
         @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
     </div>
-
     <div class="form-group">
         <label for="ConfirmPassword">Confirm Password</label>
         <input type="password" class="form-control" id="ConfirmPassword" name="ConfirmPassword" required />
+        @Html.ValidationMessageFor(model => model.ConfirmPassword, "", new { @class = "text-danger" })
     </div>
     <div class="form-group">
         <label for="Role">Role</label>
-        <select class="form-control" id="Role" name="Role">
+        <select class="form-control" id="Role" name="Role" required>
+            <option value="" disabled selected>Select your role</option>
             <option value="Admin">Admin</option>
             <option value="Learner">Learner</option>
             <option value="Instructor">Instructor</option>
         </select>
+        @Html.ValidationMessageFor(model => model.Role, "", new { @class = "text-danger" })
     </div>
     <button type="submit" class="btn btn-primary">Sign Up</button>
 </form>
