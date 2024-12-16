@@ -480,5 +480,38 @@ namespace TestApp.Controllers
             return View(leaderboard);
         }
 
+        public IActionResult GetAvailableCourses()
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            var courses = _context.Courses.FromSqlRaw(
+                "EXEC dbo.GetAvailableCourses @LearnerID = {0}", learnerId
+            ).ToList();
+
+            return View("EnrollInNewCourses", courses);
+        }
+
+        [HttpPost]
+        public IActionResult EnrollInCourse(int CourseID)
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC dbo.EnrollLearnerInCourse @LearnerID = {0}, @CourseID = {1}",
+                    learnerId, CourseID
+                );
+                TempData["SuccessMessage"] = "You have successfully enrolled in the course.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Enrollment failed. Please try again.";
+            }
+
+            return RedirectToAction("GetAvailableCourses");
+        }
+
+
+
     }
 }

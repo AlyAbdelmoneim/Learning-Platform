@@ -1,0 +1,43 @@
+﻿@model IEnumerable<TestApp.Models.Course>
+
+@{
+    ViewData["Title"] = "Enroll";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (!Model.Any())
+{
+    <p>You are already enrolled in all available courses!</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Course ID</th>
+                <th>Course Title</th>
+                <th>Credit Points</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var course in Model)
+            {
+                <tr>
+                    <td>@course.CourseID</td>
+                    <td>@course.Title</td>
+                    <td>@course.credit_points</td>
+                    <td>@course.course_description</td>
+                    <td>
+                        <form method="post" asp-action="EnrollInCourse">
+                            <input type="hidden" name="CourseID" value="@course.CourseID" />
+                            <button type="submit" class="btn btn-primary">Enroll</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
