@@ -429,7 +429,7 @@ namespace TestApp.Controllers
         {
             // Call the stored procedure without parameters
             var feedbackTrends = _context.Emotional_feedbacks
-                .FromSqlRaw("EXEC dbo.EmotionalTrendAnalysisIns")
+                .FromSqlRaw("EXEC dbo.EmotionalTrendAnalysis")
                 .ToList();
 
             // Pass the results to the view

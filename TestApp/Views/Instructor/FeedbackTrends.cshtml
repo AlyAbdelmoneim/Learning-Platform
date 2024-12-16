@@ -20,7 +20,7 @@
     <tbody>
     @if (Model != null && Model.Any())
     {
-        @foreach (var trend in Model)
+        @foreach (var trend in Model.OrderByDescending(t => t.feedback_timestamp))
         {
             <tr>
                 <td>@trend.LearnerID</td>
