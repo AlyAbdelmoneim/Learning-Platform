@@ -1,0 +1,29 @@
+﻿@model List<AssessmentDTO>
+
+<h1>Assessments</h1>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Assessment ID</th>
+                <th>Scored Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var assessment in Model)
+            {
+                <tr>
+                    <td>@assessment.AssessmentID</td>
+                    <td>@assessment.ScoredPoint</td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Assessments found.</p>
+}

@@ -13,7 +13,8 @@
             <th>Description</th>
             <th>Credit Points</th>
             <th>Difficulty Level</th>
-            <th>Actions</th>
+            <th>Modules</th>
+            <th>Leaderboard</th>
         </tr>
         </thead>
         <tbody>
@@ -28,11 +29,10 @@
                 <td>
                     <a asp-action="Modules" asp-controller="Learner" asp-route-courseID="@course.CourseID"
                        class="btn btn-primary">View Modules</a>
+                </td>
+                <td>
                     <a asp-action="Leaderboard" asp-controller="Learner" asp-route-leaderboardId="@course.CourseID"
                        class="btn btn-success">View Leaderboard</a>
-                    <a asp-action="AddEmotionalFeedback" asp-controller="Learner"
-                       asp-route-activityId="@course.CourseID"
-                       class="btn btn-warning">Add Emotional Feedback</a>
                 </td>
 
             </tr>

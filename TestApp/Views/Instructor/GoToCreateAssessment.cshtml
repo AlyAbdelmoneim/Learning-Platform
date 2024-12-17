@@ -1,0 +1,35 @@
+﻿@model Tuple<TestApp.Models.ViewModels.IntDTO, TestApp.Models.ViewModels.IntDTO>
+
+<h1>Create New Assessment</h1>
+
+<form asp-action="CreateAssessment" method="post">
+    <input type="hidden" name="courseID" value="@Model.Item1.Value" />
+    <input type="hidden" name="ModuleID" value="@Model.Item2.Value" />
+    <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label for="AssessmentType">AssessmentType</label>
+        <input type="text" id="AssessmentType" name="AssessmentType" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label for="Weightage">Weightage</label>
+        <input type="text" id="Weightage" name="Weightage" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label for="Description">Description</label>
+        <input type="text" id="Description" name="trait" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label for="TotalMarks">TotalMarks</label>
+        <input type="number" id="TotalMarks" name="TotalMarks" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label for="PassingMarks">PassingMarks</label>
+        <input type="number" id="PassingMarks" name="PassingMarks" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Add Module" class="btn btn-primary" />
+    </div>
+</form>

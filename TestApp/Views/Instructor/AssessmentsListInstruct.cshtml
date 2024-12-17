@@ -1,0 +1,38 @@
+﻿@model Tuple<List<AssessmentDTO>, TestApp.Models.ViewModels.IntDTO, TestApp.Models.ViewModels.IntDTO>
+
+<a asp-controller="Instructor" asp-action="GoToCreateAssessment" asp-route-courseID="@Model.Item2.Value" asp-route-moduleID="@Model.Item3.Value"
+   style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; font-size: 16px; text-align: center; transition: background-color 0.3s ease, transform 0.2s ease;">
+    Create Assessment
+</a>
+
+@if (Model != null && Model.Item1.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Assessment ID</th>
+                <th>Scored Points</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var assessment in Model.Item1)
+            {
+                <tr>
+                    <td>@assessment.AssessmentID</td>
+                    <td>@assessment.ScoredPoint</td>
+                    <td>
+                        <a asp-controller="Instructor" asp-action="AssessmentAnalysis"
+                           style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; font-size: 16px; text-align: center; transition: background-color 0.3s ease, transform 0.2s ease;">
+                            View Analysis
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Assessments found.</p>
+}

@@ -1,9 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using TestApp.Context;
 using TestApp.Models;
 using TestApp.Models.ViewModels;
+
+// using TestApp.Views.Learner;
 
 namespace TestApp.Controllers
 {
@@ -424,7 +428,7 @@ namespace TestApp.Controllers
                 return View("AddLearningActivity1");
             }
         }
-
+        
         public IActionResult FeedbackTrends()
         {
             // Call the stored procedure without parameters
@@ -435,5 +439,357 @@ namespace TestApp.Controllers
             // Pass the results to the view
             return View(feedbackTrends);
         }
+
+        /*public IActionResult ManageCourses(CourseViewModel courses)
+        {
+                _context.Database.ExecuteSqlRaw(
+                   "EXEC CourseViewModel @CourseID = {0}, @Title = {1}, @CourseDescription = {2}, @CanBeDeleted = {3}",
+                   courses.CourseID,
+                   courses.Title,
+                   courses.CourseDescription,
+                   !_context.Course_enrollments.Any(e => e.CourseID == courses.CourseID));
+
+                return RedirectToAction("CourseViewModel");
+        }*/
+
+        /*public IActionResult ManageCourses()
+        {
+            var courses = _context.Courses
+                .Select(course => new CourseViewModel
+                {
+                    CourseID = course.CourseID,
+                    Title = course.Title,
+                    CourseDescription = course.course_description,
+                    CanBeDeleted = !_context.Course_enrollments.Any(e => e.CourseID == course.CourseID)
+                })
+                .ToList();
+
+            return View(courses);
+        }*/
+
+
+        /*[HttpPost]
+        public IActionResult DeleteCourse(int courseId)
+        {
+            try
+            {
+                // Check if there are students enrolled in the course
+                var hasEnrolledStudents = _context.Course_enrollments.Any(e => e.CourseID == courseId);
+                if (hasEnrolledStudents)
+                {
+                    TempData["ErrorMessage"] = "Cannot delete the course. Students are enrolled in it.";
+                    return RedirectToAction("Courses");
+                }
+
+                // Get the course and delete it
+                var course = _context.Courses.FirstOrDefault(c => c.CourseID == courseId);
+                if (course != null)
+                {
+                    _context.Courses.Remove(course);
+                    _context.SaveChanges();
+                    TempData["SuccessMessage"] = "Course deleted successfully.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Course not found.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+            }
+
+            return RedirectToAction("Courses");
+        }*/
+
+        //sec failed approach :(
+        /*[HttpPost]
+        public IActionResult DeleteCourse([FromBody] int courseId)
+        {
+            try
+            {
+                var course = _context.Courses
+                    .Include(c => c.Course_enrollments) // Assuming there's an Enrollments navigation property
+                    .FirstOrDefault(c => c.CourseID == courseId);
+
+                if (course == null)
+                {
+                    return BadRequest("Course not found.");
+                }
+
+                if (course.Course_enrollments.Any())
+                {
+                    return BadRequest("Cannot delete a course that has enrolled students.");
+                }
+
+                _context.Courses.Remove(course);
+                _context.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting course: {ex.Message}");
+                return StatusCode(500, "An error occurred while deleting the course.");
+            }
+        }*/
+
+        /*public IActionResult DeleteCourse(int courseId)
+        {
+            // Declare a variable to hold the output value for HasEnrollments
+            var hasEnrollmentsParam = new SqlParameter("@HasEnrollments", SqlDbType.Bit)
+            {
+                Direction = ParameterDirection.Output
+            };
+
+            // Execute the stored procedure with the output parameter
+            _context.Database.ExecuteSqlRaw(
+                "EXEC dbo.CheckCourseEnrollment @CourseID = {0}, @HasEnrollments = @HasEnrollments OUTPUT",
+                courseId,
+                hasEnrollmentsParam
+            );
+
+            // Retrieve the output value of HasEnrollments
+            bool hasEnrollments = (bool)hasEnrollmentsParam.Value;
+
+            // If there are enrollments, prevent deletion
+            if (hasEnrollments)
+            {
+                TempData["ErrorMessage"] = "This course cannot be deleted because it has enrolled students.";
+                return RedirectToAction("ManageCourses"); // Replace with your view for managing courses
+            }
+
+            // Delete the course if no enrollments exist
+            var course = _context.Courses.FirstOrDefault(c => c.CourseID == courseId);
+            if (course != null)
+            {
+                _context.Courses.Remove(course);
+                _context.SaveChanges();
+                TempData["SuccessMessage"] = "Course deleted successfully.";
+            }
+
+            return RedirectToAction("ManageCourses");
+        }*/
+
+
+        //another failed one :(
+        /*public IActionResult DeleteCourse(int courseId)
+        {
+            var hasEnrollments = _context.Course_enrollments.Any(e => e.CourseID == courseId);
+
+            if (hasEnrollments)
+            {
+                TempData["ErrorMessage"] = "This course cannot be deleted because it has enrolled students.";
+                return RedirectToAction("ManageCourses");
+            }
+
+            var course = _context.Courses.FirstOrDefault(c => c.CourseID == courseId);
+            if (course != null)
+            {
+                _context.Courses.Remove(course);
+                _context.SaveChanges();
+                TempData["SuccessMessage"] = "Course deleted successfully.";
+            }
+
+            return RedirectToAction("ManageCourses");
+        }*/
+
+        //tal3 el mo4kla feh esm method x_x
+        public IActionResult DeleteCourse(int courseId)
+        {
+            // Check if there are any enrollments in the course
+            var hasEnrollments = _context.Course_enrollments.Any(e => e.CourseID == courseId);
+
+            if (hasEnrollments)
+            {
+                // If there are enrollments, set an error message and redirect to ManageCourses
+                TempData["ErrorMessage"] = "This course cannot be deleted because it has enrolled students.";
+                return RedirectToAction("Courses");
+            }
+
+            // Find the course in the database
+            var course = _context.Courses.FirstOrDefault(c => c.CourseID == courseId);
+            if (course != null)
+            {
+                // If course exists, delete it
+                _context.Courses.Remove(course);
+                _context.SaveChanges();
+                TempData["SuccessMessage"] = "Course deleted successfully.";
+            }
+            else
+            {
+                // If course is not found, set an error message
+                TempData["ErrorMessage"] = "Course not found.";
+            }
+
+            // Redirect back to the ManageCourses page to show the result message
+            return RedirectToAction("Courses");
+        }
+
+        // Action to view learners who completed prerequisites for a specific course
+        public IActionResult CompletedPreq(int courseId)
+        {
+            // Create a list to hold learners who completed prerequisites
+            List<Learner> learners = new List<Learner>();
+
+            // Call the stored procedure to get learners who completed prerequisites
+            learners = _context.Learners
+                .FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId).ToList();
+
+            // Return the view with the list of learners
+            return View(learners);
+        }
+
+        public IActionResult ViewLearners(int courseId)
+        {
+            Console.WriteLine("Course ID: " + courseId);
+            // Get the list of learners who completed the prerequisites for the course
+            var learners = _context.Learners
+                .FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId)
+                .Select(l => new LearnerViewModel
+                {
+                    LearnerID = l.LearnerID,
+                    FirstName = l.first_name,
+                    LastName = l.last_name,
+                    Gender = l.gender,
+                    Email = l.email,
+                    BirthDate = l.birth_date ?? DateOnly.MinValue, // Handle null birth_date
+                    Country = l.country
+                })
+                .ToList() ?? new List<LearnerViewModel>(); // Ensure it's never null, return an empty list if no data
+
+
+            //trying to debug but it still didn't display the list even with static loading
+            /*var learners = new List<LearnerViewModel>
+            {
+                new LearnerViewModel { LearnerID = 1, FirstName = "John", LastName = "Doe" },
+                new LearnerViewModel { LearnerID = 2, FirstName = "Jane", LastName = "Smith" }
+            };
+
+            // Log the learners list to check if it's empty
+            Console.WriteLine("Learners count: " + learners.Count);
+            foreach (var learner in learners)
+            {
+                Console.WriteLine($"Learner: {learner.LearnerID}, {learner.FirstName} {learner.LastName}");
+            }*/
+            Console.WriteLine("size of learners: " + learners.Count);
+
+            return PartialView("CompletedPreq");
+        }
+
+        public IActionResult SendNotification1()
+        {
+            return View();
+        }
+
+        public IActionResult SendNotification2(string message, string urgencyLevel, int learnerId)
+        {
+            try
+            {
+                var timestamp = DateTime.Now;
+
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC AssessmentNot @timestamp = {0}, @message = {1}, @urgencylevel = {2}, @LearnerID = {3}",
+                    timestamp, message, urgencyLevel, learnerId);
+
+                TempData["SuccessMessage"] = "Notification sent successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error sending notification: " + ex.Message;
+            }
+
+            return RedirectToAction("InstructorDashboard");
+        }
+
+        public IActionResult AssessmentsListInstruct(int courseID, int moduleID)
+        {
+            var learnerID = HttpContext.Session.GetInt32("UserID");
+            if (learnerID == null)
+            {
+                Console.WriteLine("LearnerID is null");
+                return View("Error");
+            }
+
+            var assessmentList = _context.AssessmentDTOs
+                .FromSqlRaw("EXECUTE dbo.AssessmentListModified @LearnerID = {0}, @CourseID = {1}, @ModuleID = {2}",
+                    learnerID, courseID, moduleID)
+                .ToList();
+            
+            IntDTO course = new IntDTO { Value = courseID };
+            IntDTO module = new IntDTO { Value = moduleID };
+            var tuple = new Tuple<List<AssessmentDTO>, IntDTO, IntDTO>(assessmentList, course, module);
+
+            return View(tuple);
+        }
+
+        public IActionResult HighestGrades()
+        {
+            var highestGrades = _context.HighestGradeDTOs
+                .FromSqlRaw("EXEC Highestgrade")
+                .ToList();
+
+            return View(highestGrades);
+        }
+
+        public IActionResult AssessmentAnalysis()
+        {
+            var assessments = _context.AssessmentDTOs
+                .FromSqlRaw("EXEC dbo.AssessmentAnalysis")
+                .ToList();
+
+            return View(assessments);
+        }
+
+        public IActionResult GoToCreateAssessment(int courseID, int moduleID)
+        {
+            IntDTO course = new IntDTO { Value = courseID };
+            IntDTO module = new IntDTO { Value = moduleID };
+            var tuple = new Tuple<IntDTO, IntDTO>(course, module);
+            return View(tuple);
+        }
+
+        [HttpPost]
+        [HttpPost]
+        public IActionResult CreateAssessment(int CourseID, int ModuleID, string Title, string AssessmentType,
+            int Weightage, string Description, int TotalMarks, int PassingMarks)
+        {
+            Console.WriteLine("CourseID: " + CourseID + " ModuleID: " + ModuleID); 
+            try
+            {
+                // Execute the stored procedure
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC CreateNewAssessment @ModuleID = {0}, @CourseID = {1}, @assessment_type = {2}, @total_marks = {3}, @passing_marks = {4}, @criteria = {5}, @weightage = {6}, @assessment_description = {7}, @title = {8}",
+                    ModuleID, CourseID, AssessmentType, TotalMarks, PassingMarks, "Criteria", Weightage, Description, Title);
+
+                // Set success message and redirect
+                TempData["SuccessMessage"] = "Assessment created successfully!";
+                return RedirectToAction("AssessmentsListInstruct", new { courseID = CourseID, moduleID = ModuleID });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and prepare error message
+                TempData["ErrorMessage"] = "Error creating assessment: " + ex.Message;
+
+                // Reinitialize ViewModel
+                // var viewModel = new CreateAssessmentViewModel
+                // {
+                //     Courses = _context.Courses.Select(c => new SelectListItem
+                //     {
+                //         Value = c.CourseID.ToString(),
+                //         Text = c.Title
+                //     }).ToList(),
+                //     Modules = _context.Modules.Select(m => new SelectListItem
+                //     {
+                //         Value = m.ModuleID.ToString(),
+                //         Text = m.Title
+                //     }).ToList()
+                // };
+
+                // Return the view with the reinitialized ViewModel
+                return View("GoToCreateAssessment");
+            }
+        }
+
     }
 }

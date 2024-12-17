@@ -158,15 +158,15 @@ VALUES
 INSERT INTO Takenassessment (AssessmentID, LearnerID, scoredPoint)
 VALUES
     (1, 1, 85),
-    (2, 2, 90),
-    (3, 3, 75),
-    (4, 4, 80),
-    (5, 5, 95),
-    (6, 6, 70),
-    (7, 7, 85),
-    (8, 8, 90),
-    (9, 9, 75),
-    (10, 10, 80);
+    (2, 1, 90),
+    (3, 1, 75),
+    (4, 1, 80),
+    (5, 1, 95),
+    (6, 1, 70),
+    (7, 1, 85),
+    (8, 1, 90),
+    (9, 1, 75),
+    (10, 1, 80);
 
 INSERT INTO Learning_activities ( ModuleID, CourseID, activity_type, instruction_details, Max_points)
 VALUES
@@ -262,28 +262,35 @@ VALUES
 INSERT INTO Course_enrollment ( CourseID, LearnerID, completion_date, enrollment_date, enrollment_status)
 VALUES
     ( 1, 1, '2023-12-01', '2023-01-01', 'Completed'),
-    ( 2, 2, '2023-12-02', '2023-02-01', 'Completed'),
-    (3, 3, '2023-12-03', '2023-03-01', 'Completed'),
-    ( 4, 4, '2023-12-04', '2023-04-01', 'Completed'),
-    ( 5, 5, '2023-12-05', '2023-05-01', 'Completed'),
-    ( 6, 6, '2023-12-06', '2023-06-01', 'Completed'),
-    ( 7, 7, '2023-12-07', '2023-07-01', 'Completed'),
-    ( 8, 8, '2023-12-08', '2023-08-01', 'Completed'),
-    ( 9, 9, '2023-12-09', '2023-09-01', 'Completed'),
-    ( 10, 10, '2023-12-10', '2023-10-01', 'Completed');
-SELECT * FROM Course;
+    ( 2, 1, '2023-12-02', '2023-02-01', 'Completed'),
+    (3, 1, '2023-12-03', '2023-03-01', 'Completed'),
+    ( 4, 1, '2023-12-04', '2023-04-01', 'Completed'),
+    ( 5, 1, '2023-12-05', '2023-05-01', 'Completed'),
+    ( 6, 1, '2023-12-06', '2023-06-01', 'Completed'),
+    ( 7, 1, '2023-12-07', '2023-07-01', 'Completed'),
+    ( 8, 1, '2023-12-08', '2023-08-01', 'Completed'),
+    ( 9, 1, '2023-12-09', '2023-09-01', 'Completed'),
+    ( 10, 1, '2023-12-10', '2023-10-01', 'Completed');
+
+SELECT * FROM Learner;
+
+SELECT * FROM Instructor;
+
 INSERT INTO Teaches (InstructorID, CourseID)
 VALUES
     (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4),
-    (5, 5),
-    (6, 6),
-    (7, 7),
-    (8, 8),
-    (9, 9),
-    (10, 10);
+    (1, 2),
+    (1, 3),
+    (1, 4),
+    (1, 5),
+    (1, 6),
+    (1, 7),
+    (1, 8),
+    (1, 9),
+    (1, 10);
+
+    SELECT * FROM Instructor WHERE InstructorID = 1;
+
 
 INSERT INTO Leaderboard (BoardID, season)
 VALUES

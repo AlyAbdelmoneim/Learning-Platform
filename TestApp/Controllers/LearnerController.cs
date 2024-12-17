@@ -4,6 +4,9 @@ using TestApp.Context;
 using TestApp.Models;
 using System.Linq;
 using Microsoft.Data.SqlClient;
+using TestApp.Models.ViewModels;
+using static System.Formats.Asn1.AsnWriter;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace TestApp.Controllers
 {
@@ -341,6 +344,38 @@ namespace TestApp.Controllers
             return RedirectToAction("Posts", new { forumID = forumID2 });
         }
 
+        public IActionResult Assessments()
+        {
+            return View();
+        }
+
+        public IActionResult AssessmentsListModified(int courseID, int moduleID)
+        {
+            var learnerID = HttpContext.Session.GetInt32("UserID");
+            if (learnerID == null)
+            {
+                Console.WriteLine("LearnerID is null");
+                return View("Error");
+            }
+
+            var assessmentList = _context.AssessmentDTOs
+                .FromSqlRaw("EXECUTE dbo.AssessmentListModified @LearnerID = {0}, @CourseID = {1}, @ModuleID = {2}",
+                    learnerID, courseID, moduleID)
+                .ToList();
+
+            return View(assessmentList);
+        }
+
+        public IActionResult HighestGrades()
+        {
+            var highestGrades = _context.HighestGradeDTOs
+                .FromSqlRaw("EXEC Highestgrade")
+                .ToList();
+
+            return View(highestGrades);
+        }
+
+
         //new code
         // View notifications for a learner
         public IActionResult Notifications()
@@ -483,52 +518,6 @@ namespace TestApp.Controllers
             return View(leaderboard);
         }
 
-        // [HttpPost]
-        // public IActionResult SubmitFeedback(int activityId, int learnerId, string emotionalState)
-        // {
-        //     if (ModelState.IsValid) // Check if form data is valid
-        //     {
-        //         try
-        //         {
-        //             // Database Connection
-        //             using (SqlConnection connection =
-        //                    new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
-        //             {
-        //                 connection.Open();
-        //
-        //                 // Execute Stored Procedure
-        //                 using (SqlCommand command = new SqlCommand("ActivityEmotionalFeedback", connection))
-        //                 {
-        //                     command.CommandType = System.Data.CommandType.StoredProcedure;
-        //                     command.Parameters.AddWithValue("@LearnerID", learnerId);
-        //                     command.Parameters.AddWithValue("@ActivityID", activityId);
-        //                     command.Parameters.AddWithValue("@timestamp", DateTime.Now); // Current timestamp
-        //                     command.Parameters.AddWithValue("@emotionalstate",
-        //                         emotionalState); // Parameter names match stored procedure
-        //
-        //                     command.ExecuteNonQuery(); // Execute the stored procedure
-        //                 }
-        //             }
-        //
-        //             Console.WriteLine(DateTime.Now);
-        //             // Success Message and Redirect
-        //             TempData["SuccessMessage"] = "Your feedback has been recorded successfully!";
-        //             return RedirectToAction("LearnerDashboard"); // Redirect to Learner Dashboard
-        //         }
-        //         catch (Exception ex)
-        //         {
-        //             // Log the error (optional for debugging)
-        //             TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
-        //             return RedirectToAction("AddEmotionalFeedback", new { activityId = activityId });
-        //         }
-        //     }
-        //
-        //     // Handle Invalid Model State
-        //     TempData["ErrorMessage"] = "Invalid feedback data. Please check your inputs.";
-        //     return RedirectToAction("AddEmotionalFeedback", new { activityId = activityId });
-        // }
-
-        [HttpPost]
         [HttpPost]
         public IActionResult SubmitFeedback(int activityId, string emotionalState)
         {
@@ -554,8 +543,8 @@ namespace TestApp.Controllers
                         command.Parameters.AddWithValue("@timestamp", DateTime.Now);
                         command.Parameters.AddWithValue("@emotionalstate",
                             emotionalState ?? ""); // Ensure non-null emotionalState
-
-                        command.ExecuteNonQuery();
+                        command.Parameters.AddWithValue("@emotionalstate",
+                            emotionalState); // Parameter names match stored procedure
                     }
                 }
 
@@ -566,7 +555,82 @@ namespace TestApp.Controllers
                 TempData["ErrorMessage"] = "Error recording feedback: " + ex.Message;
             }
 
-            return RedirectToAction("LearnerDashboard");
+
+            TempData["ErrorMessage"] = "Invalid feedback data. Please check your inputs.";
+            return RedirectToAction("AddEmotionalFeedback", new { activityId = activityId });
+        }
+
+
+        public IActionResult GetAvailableCourses()
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            var courses = _context.Courses.FromSqlRaw(
+                "EXEC dbo.GetAvailableCourses @LearnerID = {0}", learnerId
+            ).ToList();
+
+            return View("EnrollInNewCourses", courses);
+        }
+
+        [HttpPost]
+        public IActionResult EnrollInCourse(int CourseID)
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!hasCompletedPrereq(CourseID))
+            {
+                TempData["ErrorMessage"] = "You have not completed the prerequisites for this course.";
+                return RedirectToAction("GetAvailableCourses");
+            }
+
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC dbo.EnrollLearnerInCourse @LearnerID = {0}, @CourseID = {1}",
+                    learnerId, CourseID
+                );
+                TempData["SuccessMessage"] = "You have successfully enrolled in the course.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Enrollment failed. Please try again.";
+            }
+
+            return RedirectToAction("GetAvailableCourses");
+        }
+
+        public bool hasCompletedPrereq(int courseID)
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!learnerId.HasValue)
+            {
+                return false;
+            }
+
+            Console.WriteLine("coming course Id + " + courseID);
+
+            // Materialize the result before applying LINQ
+            var learners = _context.Learners
+                .FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID = {0}", courseID)
+                .AsEnumerable() // Forces composition to be in-memory
+                .Select(l => l.LearnerID)
+                .ToList();
+            var prereq = _context.CoursePrereqs.FromSqlRaw("EXEC dbo.GetCoursePreq @CourseID = {0}", courseID).ToList();
+            Console.WriteLine("prereq number " + prereq.Count);
+
+            Console.WriteLine("learners number " + learners.Count);
+
+            return prereq.Count == 0 || learners.Contains(learnerId.Value);
+        }
+
+        public IActionResult Activities(int courseId, int moduleId)
+        {
+            var activities = _context.Learning_activities
+                .FromSqlRaw("EXEC dbo.GetActivities @CourseID = {0}, @ModuleID = {1}", courseId, moduleId).ToList();
+            IntDTO course = new IntDTO { Value = courseId };
+            IntDTO module = new IntDTO { Value = moduleId };
+            var tuple = new Tuple<List<Learning_activity>, IntDTO, IntDTO>(activities, course, module);
+            return View(tuple);
         }
     }
 }
