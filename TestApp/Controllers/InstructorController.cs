@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TestApp.Context;
 using TestApp.Models;
@@ -190,5 +191,59 @@ namespace TestApp.Controllers
                 return View();
             }
         }
-    } 
-}
+
+        public IActionResult AssessmentsListInstruct(int courseID, int moduleID)
+        {
+            var learnerID = HttpContext.Session.GetInt32("UserID");
+            if (learnerID == null)
+            {
+                Console.WriteLine("LearnerID is null");
+                return View("Error");
+            }
+
+            var assessmentList = _context.AssessmentDTOs
+                .FromSqlRaw("EXECUTE dbo.AssessmentListModified @LearnerID = {0}, @CourseID = {1}, @ModuleID = {2}",
+                            learnerID, courseID, moduleID)
+                .ToList();
+
+            return View(assessmentList);
+        }
+
+        public IActionResult HighestGrades()
+        {
+            var highestGrades = _context.HighestGradeDTOs
+                .FromSqlRaw("EXEC Highestgrade")
+                .ToList();
+
+            return View(highestGrades);
+        }
+
+        public IActionResult AssessmentAnalysis()
+        {
+            var assessments = _context.AssessmentDTOs
+                .FromSqlRaw("EXEC dbo.AssessmentAnalysis")
+                .ToList();
+
+            return View(assessments);
+        }
+
+        public IActionResult GoToCreateAssessment()
+        {
+            var viewModel = new CreateAssessmentViewModel
+            {
+                Courses = _context.Courses.Select(c => new SelectListItem
+                {
+                    Value = c.CourseID.ToString(),
+                    Text = c.Title
+                }).ToList(),
+                Modules = _context.Modules.Select(m => new SelectListItem
+                {
+                    Value = m.ModuleID.ToString(),
+                    Text = m.Title
+                }).ToList()
+            };
+
+            return View(viewModel);
+        }
+    }
+} 
