@@ -1257,3 +1257,14 @@ BEGIN
     )
 END;
 GO
+
+GO
+
+CREATE PROCEDURE GetCoursePreq
+@CourseID INT
+AS
+BEGIN
+    SELECT *
+    FROM CoursePrerequisite
+    WHERE CourseID = @CourseID
+END;
