@@ -637,48 +637,66 @@ namespace TestApp.Controllers
              return View(learners);
          }
 
-        public IActionResult ViewLearners(int courseId)
-        {
-            Console.WriteLine("Course ID: " + courseId);
-            // Get the list of learners who completed the prerequisites for the course
-            var learners = _context.Learners.FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId)
-                .Select(l => new LearnerViewModel
-                {
-                    LearnerID = l.LearnerID,
-                    FirstName = l.first_name,
-                    LastName = l.last_name,
-                    Gender = l.gender,
-                    Email = l.email,
-                    BirthDate = l.birth_date ?? DateOnly.MinValue, // Handle null birth_date
-                    Country = l.country
-                })
-                .ToList() ?? new List<LearnerViewModel>();  // Ensure it's never null, return an empty list if no data
+         public IActionResult ViewLearners(int courseId)
+         {
+             Console.WriteLine("Course ID: " + courseId);
+             // Get the list of learners who completed the prerequisites for the course
+             var learners = _context.Learners
+                 .FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId)
+                 .Select(l => new LearnerViewModel
+                 {
+                     LearnerID = l.LearnerID,
+                     FirstName = l.first_name,
+                     LastName = l.last_name,
+                     Gender = l.gender,
+                     Email = l.email,
+                     BirthDate = l.birth_date ?? DateOnly.MinValue, // Handle null birth_date
+                     Country = l.country
+                 })
+                 .ToList() ?? new List<LearnerViewModel>(); // Ensure it's never null, return an empty list if no data
 
 
-            //trying to debug but it still didn't display the list even with static loading
-            /*var learners = new List<LearnerViewModel>
-            {
-                new LearnerViewModel { LearnerID = 1, FirstName = "John", LastName = "Doe" },
-                new LearnerViewModel { LearnerID = 2, FirstName = "Jane", LastName = "Smith" }
-            };
+             //trying to debug but it still didn't display the list even with static loading
+             /*var learners = new List<LearnerViewModel>
+             {
+                 new LearnerViewModel { LearnerID = 1, FirstName = "John", LastName = "Doe" },
+                 new LearnerViewModel { LearnerID = 2, FirstName = "Jane", LastName = "Smith" }
+             };
 
-            // Log the learners list to check if it's empty
-            Console.WriteLine("Learners count: " + learners.Count);
-            foreach (var learner in learners)
-            {
-                Console.WriteLine($"Learner: {learner.LearnerID}, {learner.FirstName} {learner.LastName}");
-            }*/
-            Console.WriteLine("size of learners: " + learners.Count);
+             // Log the learners list to check if it's empty
+             Console.WriteLine("Learners count: " + learners.Count);
+             foreach (var learner in learners)
+             {
+                 Console.WriteLine($"Learner: {learner.LearnerID}, {learner.FirstName} {learner.LastName}");
+             }*/
+             Console.WriteLine("size of learners: " + learners.Count);
 
-            return PartialView("CompletedPreq");
+             return PartialView("CompletedPreq");
+         }
 
-        }
+         public IActionResult SendNotification1()
+         {
+             return View();
+         }
 
+         public IActionResult SendNotification2(string message, string urgencyLevel, int learnerId)
+         {
+             try
+             {
+                 var timestamp = DateTime.Now;
 
+                 _context.Database.ExecuteSqlRaw(
+                     "EXEC AssessmentNot @timestamp = {0}, @message = {1}, @urgencylevel = {2}, @LearnerID = {3}",
+                     timestamp, message, urgencyLevel, learnerId);
 
+                 TempData["SuccessMessage"] = "Notification sent successfully!";
+             }
+             catch (Exception ex)
+             {
+                 TempData["ErrorMessage"] = "Error sending notification: " + ex.Message;
+             }
 
-
-
-
+             return RedirectToAction("InstructorDashboard");
+         }
     }
 }
