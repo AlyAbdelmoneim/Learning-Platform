@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Learners Page";
+}
+
+<h2>Learners</h2>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var learner in Model)
+    {
+        <tr>
+            <td>@learner.first_name</td>
+            <td>@learner.email</td>
+            <td>
+                <button onclick="window.location.href='@Url.Action("PersonalizationProfile", "Admin", new { learnerId = learner.LearnerID })'" class="btn btn-info">View Profile</button>
+                <form method="post" action="@Url.Action("DeleteLearner", "Admin")" style="display:inline;">
+                    <input type="hidden" name="id" value="@learner.LearnerID" />
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

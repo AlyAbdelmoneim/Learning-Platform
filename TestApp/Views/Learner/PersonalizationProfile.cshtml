@@ -1,0 +1,45 @@
+@model List<TestApp.Models.PersonalizationProfile>
+
+<h1>Personalization Profile</h1>
+
+<!-- Add button to create a new personalization profile -->
+<a href="/Learner/AddPersonalizationProfile" class="btn btn-success mb-3">Add Personalization Profile</a>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Emotional State</th>
+            <th>Personality Type</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var profile in Model)
+        {
+            <tr>
+                <td>@profile.ProfileID</td>
+                <td>@profile.emotional_state</td>
+                <td>@profile.personality_type</td>
+                <td>
+                    <!-- Delete button -->
+                    <form method="post" asp-action="DeletePersonalization" asp-route-id="@profile.ProfileID" style="display:inline;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+
+                    <!-- Learning path button (Change to GET method) -->
+                    <form method="get" asp-action="LearningPath" asp-route-profileID="@profile.ProfileID" style="display:inline;">
+                        <button type="submit" class="btn btn-primary">See The Path</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No personalization profiles found.</p>
+}

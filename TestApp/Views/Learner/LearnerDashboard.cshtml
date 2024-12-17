@@ -1,0 +1,74 @@
+@model List<TestApp.Models.Learner>
+
+@{
+    ViewData["Title"] = "Learner Dashboard";
+}
+
+<h1 class="text-center">Welcome to the Learner Dashboard!</h1>
+
+<!-- Display success and error messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<!-- Display learner details -->
+@if (Model != null && Model.Any())
+{
+    var learner = Model.FirstOrDefault();
+
+    <div class="card p-4 shadow-sm mb-4">
+        <h3>Profile Information</h3>
+        <p><strong>Name:</strong> @learner.first_name @learner.last_name</p>
+        <p><strong>Email:</strong> @learner.email</p>
+        <p><strong>Gender:</strong> @learner.gender</p>
+        <p><strong>Date of Birth:</strong> @learner.birth_date?.ToString("yyyy-MM-dd")</p>
+        <p><strong>Cultural Background:</strong> @learner.cultural_background</p>
+    </div>
+
+    <!-- Action buttons for editing and personalizing profile -->
+    <div class="d-flex justify-content-between">
+        <a asp-action="EditProfile" asp-controller="Learner" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit Profile
+        </a>
+
+        <a asp-action="PersonalizationProfile" asp-controller="Learner" class="btn btn-info">
+            <i class="fas fa-cogs"></i> Go to Personalization Profile
+        </a>
+        <a asp-action="Courses" asp-controller="Learner" class="btn btn-info">
+            <i class="fas fa-cogs"></i> Go to Your Courses
+        </a>
+
+        <a asp-action="LearnerGoals" asp-controller="Learner" class="btn btn-info">
+            <i class="fas fa-cogs"></i> Go to Your Learning Goals
+        </a>
+    </div>
+}
+else
+{
+    <p>No learner data available.</p>
+}
+
+<!-- Delete Account Section -->
+<hr />
+<form asp-action="DeleteAccount" asp-controller="Learner" method="post"
+      onsubmit="return confirm('Are you sure you want to delete your account? This action is irreversible.');">
+    <button type="submit" class="btn btn-danger">
+        <i class="fas fa-trash-alt"></i> Delete Account
+    </button>
+</form>

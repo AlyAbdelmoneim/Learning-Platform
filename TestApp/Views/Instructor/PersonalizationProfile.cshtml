@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Learner Personalization Profile";
+}
+
+<h1>Personalization Profile for Learner</h1>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Profile ID</th>
+        <th>Learner ID</th>
+        <th>Emotional State</th>
+        <th>Personality Type</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var profile in Model)
+    {
+        <tr>
+            <td>@profile.ProfileID</td>
+            <td>@profile.emotional_state</td>
+            <td>@profile.personality_type</td>
+            <td>
+                <form method="get" action="@Url.Action("AddPathToLearner", "Instructor")">
+                    <!-- Pass learnerId and profileId as query parameters -->
+                    <input type="hidden" name="LearnerId" value="@profile.LearnerID" />
+                    <input type="hidden" name="ProfileId" value="@profile.ProfileID" />
+                    <button type="submit" class="btn btn-danger">Set Path</button>
+                </form>
+            </td>
+        </tr>
+    }
+
+    </tbody>
+</table>

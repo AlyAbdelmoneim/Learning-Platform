@@ -1,0 +1,54 @@
+@model TestApp.Models.Learner
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Learner</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.first_name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.first_name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.last_name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.last_name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.gender)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.gender)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.birth_date)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.birth_date)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.country)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.country)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.cultural_background)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.cultural_background)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.LearnerID">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

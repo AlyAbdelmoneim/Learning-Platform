@@ -1,0 +1,42 @@
+﻿@model List<AssessmentDTO>
+
+<h1>Assessments</h1>
+
+<a asp-controller="Instructor" asp-action="GoToCreateAssessment"
+   style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; font-size: 16px; text-align: center; transition: background-color 0.3s ease, transform 0.2s ease;">
+    Create Assessment
+</a>
+<br />
+<br />
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Assessment ID</th>
+                <th>Scored Points</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var assessment in Model)
+            {
+                <tr>
+                    <td>@assessment.AssessmentID</td>
+                    <td>@assessment.ScoredPoint</td>
+                    <td>
+                        <a asp-controller="Instructor" asp-action="AssessmentAnalysis"
+                           style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; font-size: 16px; text-align: center; transition: background-color 0.3s ease, transform 0.2s ease;">
+                            View Analysis
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Assessments found.</p>
+}

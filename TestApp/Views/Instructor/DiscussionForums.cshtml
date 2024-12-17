@@ -1,0 +1,39 @@
+@model List<TestApp.Models.Discussion_forum>
+
+<h1>Discussion Forums</h1>
+
+<!-- Add button to create a new personalization profile -->
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Last Active</th>
+            <th>Timestamp</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var forum in Model)
+        {
+            <tr>
+                <td>@forum.title</td>
+                <td>@forum.forum_description</td>
+                <td>@forum.last_active</td>
+                <td>@forum.forum_timestamp</td>
+                <td>
+                    <a asp-action="Posts" asp-controller="Instructor" asp-route-forumID="@forum.forumID" class="btn btn-primary">View Posts</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Discussions found.</p>
+}
+<a asp-action="AddDiscussionForum" asp-controller="Instructor" asp-route-courseID="@Model.First().CourseID" asp-route-moduleID="@Model.First().ModuleID" class="btn btn-primary">Add Discussion Forum</a>
+
