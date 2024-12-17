@@ -5,27 +5,34 @@
 @if (ViewBag.CurrentLearnerRank != null)
 {
     <div class="alert alert-info">
-        <strong>Your Rank:</strong> Rank #@ViewBag.CurrentLearnerRank.rankNum
-        with @ViewBag.CurrentLearnerRank.total_points points.
+        <strong>Your Rank:</strong> Rank #@Html.Encode(ViewBag.CurrentLearnerRank.rankNum)
+        with @Html.Encode(ViewBag.CurrentLearnerRank.total_points) points.
     </div>
 }
 
-<table class="table table-striped">
-    <thead>
-    <tr>   
-        <th>Rank</th>
-        <th>Learner ID</th>
-        <th>Total Points</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>@item.rankNum</td>
-            <td>@item.LearnerID</td>
-            <td>@item.total_points</td>
+@if (Model != null && Model.Any())
+{
+    <table class="table table-striped">
+        <thead>
+        <tr>   
+            <th>Rank</th>
+            <th>Learner ID</th>
+            <th>Total Points</th>
         </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.Encode(item.rankNum)</td>
+                <td>@Html.Encode(item.LearnerID)</td>
+                <td>@Html.Encode(item.total_points)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No records found.</p>
+}

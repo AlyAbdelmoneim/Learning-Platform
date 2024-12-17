@@ -424,7 +424,7 @@ namespace TestApp.Controllers
                 return View("AddLearningActivity1");
             }
         }
-        
+
         public IActionResult FeedbackTrends()
         {
             // Call the stored procedure without parameters

@@ -422,7 +422,7 @@ namespace TestApp.Controllers
             var courses = _context.Courses.FromSqlRaw("EXEC dbo.CompletedCourses @LearnerID = {0}", learnerId).ToList();
             return View(courses);
         }
-        
+
         [HttpGet]
         public IActionResult AddEmotionalFeedback(int activityId)
         {
@@ -467,10 +467,13 @@ namespace TestApp.Controllers
         //     return RedirectToAction("LearnerDashboard");
         // }
         //
+        [HttpGet]
         public IActionResult Leaderboard(int leaderboardId)
         {
-            Console.WriteLine("Leaderboard Id is " + leaderboardId);
-            var leaderboard = _context.RankingViewModels.FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
+            Console.WriteLine("leaderboarddd numberrr isss" + leaderboardId);
+            var leaderboard = _context.RankingViewModels
+                .FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId)
+                .ToList();
 
             if (leaderboard == null)
             {
@@ -479,49 +482,91 @@ namespace TestApp.Controllers
 
             return View(leaderboard);
         }
-        
+
+        // [HttpPost]
+        // public IActionResult SubmitFeedback(int activityId, int learnerId, string emotionalState)
+        // {
+        //     if (ModelState.IsValid) // Check if form data is valid
+        //     {
+        //         try
+        //         {
+        //             // Database Connection
+        //             using (SqlConnection connection =
+        //                    new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+        //             {
+        //                 connection.Open();
+        //
+        //                 // Execute Stored Procedure
+        //                 using (SqlCommand command = new SqlCommand("ActivityEmotionalFeedback", connection))
+        //                 {
+        //                     command.CommandType = System.Data.CommandType.StoredProcedure;
+        //                     command.Parameters.AddWithValue("@LearnerID", learnerId);
+        //                     command.Parameters.AddWithValue("@ActivityID", activityId);
+        //                     command.Parameters.AddWithValue("@timestamp", DateTime.Now); // Current timestamp
+        //                     command.Parameters.AddWithValue("@emotionalstate",
+        //                         emotionalState); // Parameter names match stored procedure
+        //
+        //                     command.ExecuteNonQuery(); // Execute the stored procedure
+        //                 }
+        //             }
+        //
+        //             Console.WriteLine(DateTime.Now);
+        //             // Success Message and Redirect
+        //             TempData["SuccessMessage"] = "Your feedback has been recorded successfully!";
+        //             return RedirectToAction("LearnerDashboard"); // Redirect to Learner Dashboard
+        //         }
+        //         catch (Exception ex)
+        //         {
+        //             // Log the error (optional for debugging)
+        //             TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+        //             return RedirectToAction("AddEmotionalFeedback", new { activityId = activityId });
+        //         }
+        //     }
+        //
+        //     // Handle Invalid Model State
+        //     TempData["ErrorMessage"] = "Invalid feedback data. Please check your inputs.";
+        //     return RedirectToAction("AddEmotionalFeedback", new { activityId = activityId });
+        // }
+
         [HttpPost]
-public IActionResult SubmitFeedback(int activityId, int learnerId, string emotionalState)
-{
-    if (ModelState.IsValid) // Check if form data is valid
-    {
-        try
+        [HttpPost]
+        public IActionResult SubmitFeedback(int activityId, string emotionalState)
         {
-            // Database Connection
-            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            if (!learnerId.HasValue)
             {
-                connection.Open();
-
-                // Execute Stored Procedure
-                using (SqlCommand command = new SqlCommand("ActivityEmotionalFeedback", connection))
-                {
-                    command.CommandType = System.Data.CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@LearnerID", learnerId);
-                    command.Parameters.AddWithValue("@ActivityID", activityId);
-                    command.Parameters.AddWithValue("@timestamp", DateTime.Now); // Current timestamp
-                    command.Parameters.AddWithValue("@emotionalstate", emotionalState); // Parameter names match stored procedure
-
-                    command.ExecuteNonQuery(); // Execute the stored procedure
-                }
+                return RedirectToAction("Login", "Account");
             }
-            Console.WriteLine(DateTime.Now);
-            // Success Message and Redirect
-            TempData["SuccessMessage"] = "Your feedback has been recorded successfully!";
-            return RedirectToAction("LearnerDashboard"); // Redirect to Learner Dashboard
-        }
-        catch (Exception ex)
-        {
-            // Log the error (optional for debugging)
-            TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
-            return RedirectToAction("AddEmotionalFeedback", new { activityId = activityId });
-        }
-    }
 
-    // Handle Invalid Model State
-    TempData["ErrorMessage"] = "Invalid feedback data. Please check your inputs.";
-    return RedirectToAction("AddEmotionalFeedback", new { activityId = activityId });
-}
-        
+            try
+            {
+                using (SqlConnection connection =
+                       new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("ActivityEmotionalFeedback", connection))
+                    {
+                        command.CommandType = System.Data.CommandType.StoredProcedure;
 
+                        // Add parameters to the stored procedure
+                        command.Parameters.AddWithValue("@LearnerID", learnerId.Value);
+                        command.Parameters.AddWithValue("@ActivityID", activityId);
+                        command.Parameters.AddWithValue("@timestamp", DateTime.Now);
+                        command.Parameters.AddWithValue("@emotionalstate",
+                            emotionalState ?? ""); // Ensure non-null emotionalState
+
+                        command.ExecuteNonQuery();
+                    }
+                }
+
+                TempData["SuccessMessage"] = "Your feedback has been recorded successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error recording feedback: " + ex.Message;
+            }
+
+            return RedirectToAction("LearnerDashboard");
+        }
     }
 }

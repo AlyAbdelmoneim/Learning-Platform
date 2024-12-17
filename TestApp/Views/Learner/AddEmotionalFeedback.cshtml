@@ -13,7 +13,7 @@
     <!-- Emotional State Dropdown -->
     <div class="form-group">
         <label for="emotionalState">How did you feel about this activity?</label>
-        <select id="emotionalState" name="emotionalState" class="form-control" required>
+        <select id="emotionalState" name="emotionalState" class="form-control" required onchange="handleOtherFeedback()">
             <option value="">Select your emotional state</option>
             <option value="Happy">Happy</option>
             <option value="Confident">Confident</option>
@@ -23,15 +23,42 @@
         </select>
     </div>
 
+    <!-- Text Field for "Other" Emotional State -->
+    <div class="form-group" id="otherFeedbackGroup" style="display: none;">
+        <label for="otherFeedback">Please specify:</label>
+        <textarea id="otherFeedback" class="form-control"></textarea>
+    </div>
+
     <button type="submit" class="btn btn-primary">Submit Feedback</button>
 </form>
 
-<!-- Display Success or Error Messages -->
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-}
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
+<script>
+    function handleOtherFeedback() {
+        const emotionalState = document.getElementById('emotionalState').value;
+        const otherFeedbackGroup = document.getElementById('otherFeedbackGroup');
+        const otherFeedbackInput = document.getElementById('otherFeedback');
+
+        if (emotionalState === 'Other') {
+            otherFeedbackGroup.style.display = 'block';
+        } else {
+            otherFeedbackGroup.style.display = 'none';
+            otherFeedbackInput.value = ''; // Clear the textarea when "Other" is not selected
+        }
+    }
+
+    // Append "Other" feedback text to EmotionalState before submission
+    document.querySelector('form').addEventListener('submit', function (event) {
+        const emotionalState = document.getElementById('emotionalState').value;
+        const otherFeedbackInput = document.getElementById('otherFeedback').value.trim();
+
+        if (emotionalState === 'Other' && otherFeedbackInput) {
+            // Append the text from the "Other" field to the EmotionalState field
+            document.getElementById('emotionalState').value = `Other: ${otherFeedbackInput}`;
+        }
+    });
+
+
+
+
+
+</script>
