@@ -475,33 +475,7 @@ namespace TestApp.Controllers
 
             return View(model);
         }
-
-        [HttpPost]
-        // public IActionResult AddEmotionalFeedback(Emotional_feedback feedback)
-        // {
-        //     if (!ModelState.IsValid)
-        //     {
-        //         return View(feedback);
-        //     }
-        //
-        //     using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
-        //     {
-        //         connection.Open();
-        //         using (SqlCommand command = new SqlCommand("AddEmotionalFeedback", connection))
-        //         {
-        //             command.CommandType = System.Data.CommandType.StoredProcedure;
-        //             command.Parameters.AddWithValue("@LearnerID", feedback.LearnerID);
-        //             command.Parameters.AddWithValue("@ActivityID", feedback.activityID);
-        //             command.Parameters.AddWithValue("@EmotionalState", feedback.emotional_state);
-        //
-        //             command.ExecuteNonQuery();
-        //         }
-        //     }
-        //
-        //     TempData["SuccessMessage"] = "Your feedback has been recorded successfully!";
-        //     return RedirectToAction("LearnerDashboard");
-        // }
-        //
+        
         [HttpGet]
         public IActionResult Leaderboard(int leaderboardId)
         {
@@ -529,24 +503,10 @@ namespace TestApp.Controllers
 
             try
             {
-                using (SqlConnection connection =
-                       new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
-                {
-                    connection.Open();
-                    using (SqlCommand command = new SqlCommand("ActivityEmotionalFeedback", connection))
-                    {
-                        command.CommandType = System.Data.CommandType.StoredProcedure;
-
-                        // Add parameters to the stored procedure
-                        command.Parameters.AddWithValue("@LearnerID", learnerId.Value);
-                        command.Parameters.AddWithValue("@ActivityID", activityId);
-                        command.Parameters.AddWithValue("@timestamp", DateTime.Now);
-                        command.Parameters.AddWithValue("@emotionalstate",
-                            emotionalState ?? ""); // Ensure non-null emotionalState
-                        command.Parameters.AddWithValue("@emotionalstate",
-                            emotionalState); // Parameter names match stored procedure
-                    }
-                }
+                _context.Database.ExecuteSqlRaw("EXEC ActivityEmotionalFeedback @LearnerID = {0}, @ActivityID = {1}, @timestamp = {2}, @emotionalstate = {3}",
+                    learnerId.Value, activityId, DateTime.Now, emotionalState);
+                
+                Console.WriteLine("gamda fash55");
 
                 TempData["SuccessMessage"] = "Your feedback has been recorded successfully!";
             }
@@ -554,10 +514,7 @@ namespace TestApp.Controllers
             {
                 TempData["ErrorMessage"] = "Error recording feedback: " + ex.Message;
             }
-
-
-            TempData["ErrorMessage"] = "Invalid feedback data. Please check your inputs.";
-            return RedirectToAction("AddEmotionalFeedback", new { activityId = activityId });
+            return RedirectToAction("LearnerDashboard");
         }
 
 
