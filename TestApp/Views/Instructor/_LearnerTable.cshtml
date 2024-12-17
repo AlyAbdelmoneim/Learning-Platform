@@ -1,0 +1,38 @@
+﻿@model List<TestApp.Models.ViewModels.LearnerViewModel>
+
+<h2>Learners who have completed prerequisites</h2>
+
+@if (Model != null && Model.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Learner ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Gender</th>
+                <th>Email</th>
+                <th>Birth Date</th>
+                <th>Country</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var learner in Model)
+            {
+                <tr>
+                    <td>@learner.LearnerID</td>
+                    <td>@learner.FirstName</td>
+                    <td>@learner.LastName</td>
+                    <td>@learner.Gender</td>
+                    <td>@learner.Email</td>
+                    <td>@learner.BirthDate</td>
+                    <td>@learner.Country</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No learners found who have completed the prerequisites.</p>
+}

@@ -1,0 +1,28 @@
+﻿@model List<TestApp.Models.ViewModels.LearnerViewModel>
+
+<h1>Learners Who Have Completed Prerequisites</h1>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Learner ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var learner in Model)
+            {
+                <tr>
+                    <td>@learner.LearnerID</td>
+                    <td>@learner.FirstName + " " + @learner.LastName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No learners have completed the prerequisites for this course.</p>
+}

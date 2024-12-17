@@ -1666,6 +1666,59 @@ BEGIN
 END
 GO
 
+
+GO
+CREATE PROCEDURE CheckCourseEnrollment
+    @CourseID INT,
+    @HasEnrollments BIT OUTPUT
+AS
+BEGIN
+    SELECT @HasEnrollments = CASE 
+        WHEN EXISTS (
+            SELECT 1 
+            FROM Course_enrollment 
+            WHERE CourseID = @CourseID
+        ) THEN 1
+        ELSE 0
+    END
+END
+GO
+
+
+GO
+CREATE PROCEDURE GetLearnersWithCompletedPrerequisites
+    @CourseID INT
+AS
+BEGIN
+    -- Get the list of learners who have completed all prerequisites for the course
+    SELECT DISTINCT ce.LearnerID, l.first_name , l.last_name 
+    FROM Course_enrollment ce
+    JOIN Learner l ON ce.LearnerID = l.LearnerID
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM CoursePrerequisite cp
+        WHERE cp.CourseID = @CourseID
+        AND cp.Prereq NOT IN (
+            SELECT CourseID
+            FROM Course_enrollment
+            WHERE LearnerID = ce.LearnerID
+        )
+    )
+END;
+GO
+
+
+
+
+
+
+
+
+
+
+
+
+
 INSERT INTO Course (CourseID,Title, learning_objective, credit_points, difficulty_level, course_description)
 VALUES
     (1, 'Math 101', 'Basic Math', 3, 'Easy', 'Introduction to basic math concepts'),
@@ -1681,3 +1734,60 @@ VALUES
 
 SELECT *
 FROM Course_enrollment
+
+SELECT *
+FROM Learner
+
+SELECT * 
+FROM Course
+
+SELECT *
+FROM Instructor
+
+EXEC InstructorCourses @InstructorID = 1;
+
+
+INSERT INTO Course_enrollment (CourseID, LearnerID, completion_date, enrollment_date, enrollment_status)
+VALUES 
+(1, 1, '2024-12-01', '2024-09-01', 'Completed'),
+(1, 2, NULL, '2024-10-15', 'In Progress'),
+(3, 2, '2024-11-20', '2024-08-20', 'Completed'),
+(3, 3, NULL, '2024-11-01', 'Enrolled'),
+(105, 205, '2024-10-30', '2024-06-30', 'Completed'),
+(106, 206, NULL, '2024-12-10', 'Pending'),
+(107, 207, '2024-11-25', '2024-07-15', 'Completed'),
+(108, 208, NULL, '2024-09-10', 'Dropped'),
+(109, 209, '2024-12-05', '2024-09-05', 'Completed'),
+(110, 210, NULL, '2024-10-01', 'In Progress');
+
+
+SELECT *
+FROM Instructor
+
+INSERT INTO Teaches (InstructorID, CourseID)
+VALUES
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (1, 4),
+    (5, 5),
+    (6, 6),
+    (7, 7),
+    (8, 8),
+    (9, 9),
+    (10, 10);
+
+
+-- Inserting sample course prerequisites
+INSERT INTO CoursePrerequisite (CourseID, Prereq) VALUES (101, 100); -- Course 101 requires Course 100 as a prerequisite
+INSERT INTO CoursePrerequisite (CourseID, Prereq) VALUES (102, 100); -- Course 102 requires Course 100 as a prerequisite
+INSERT INTO CoursePrerequisite (CourseID, Prereq) VALUES (103, 101); -- Course 103 requires Course 101 as a prerequisite
+INSERT INTO CoursePrerequisite (CourseID, Prereq) VALUES (104, 102); -- Course 104 requires Course 102 as a prerequisite
+INSERT INTO CoursePrerequisite (CourseID, Prereq) VALUES (105, 103); -- Course 105 requires Course 103 as a prerequisite
+INSERT INTO CoursePrerequisite (CourseID, Prereq) VALUES (106, 104); -- Course 106 requires Course 104 as a prerequisite
+INSERT INTO CoursePrerequisite (CourseID, Prereq) VALUES (107, 105); -- Course 107 requires Course 105 as a prerequisite
+INSERT INTO CoursePrerequisite (CourseID, Prereq) VALUES (108, 106); -- Course 108 requires Course 106 as a prerequisite
+INSERT INTO CoursePrerequisite (CourseID, Prereq) VALUES (109, 107); -- Course 109 requires Course 107 as a prerequisite
+INSERT INTO CoursePrerequisite (CourseID, Prereq) VALUES (110, 108); -- Course 110 requires Course 108 as a prerequisite
+
+

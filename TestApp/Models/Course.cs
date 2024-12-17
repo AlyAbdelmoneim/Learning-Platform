@@ -17,6 +17,15 @@ public partial class Course
 
     public string? course_description { get; set; }
 
+    /*public bool CanBeDeleted
+    {
+        get
+        {
+            // Check if there are no enrollments (i.e., no students are enrolled)
+            return Course_enrollments == null || !Course_enrollments.Any();
+        }
+    }*/
+
     public virtual ICollection<Course_enrollment> Course_enrollments { get; set; } = new List<Course_enrollment>();
 
     public virtual ICollection<Module> Modules { get; set; } = new List<Module>();
