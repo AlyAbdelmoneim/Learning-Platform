@@ -1,0 +1,35 @@
+@model Tuple<List<TestApp.Models.Learning_activity>, TestApp.Models.ViewModels.IntDTO, TestApp.Models.ViewModels.IntDTO>
+<h1>Modules</h1>
+
+@if (Model != null && Model.Item1.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Activity Type</th>
+            <th>Instruction Details</th>
+            <th>Max Points</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var activity in Model.Item1)
+        {
+            <tr>
+                <td>@activity.activity_type</td>
+                <td>@activity.instruction_details</td>
+                <td>@activity.Max_points</td>
+                <td>
+                    <a asp-action="AddEmotionalFeedback" asp-controller="Learner"
+                       asp-route-activityId="@activity.ActivityID"
+                       class="btn btn-warning">Add Emotional Feedback</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Activities found.</p>
+}

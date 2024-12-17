@@ -4,6 +4,7 @@ using TestApp.Context;
 using TestApp.Models;
 using System.Linq;
 using Microsoft.Data.SqlClient;
+using TestApp.Models.ViewModels;
 
 namespace TestApp.Controllers
 {
@@ -511,7 +512,7 @@ namespace TestApp.Controllers
                     Console.WriteLine(DateTime.Now);
                     // Success Message and Redirect
                     TempData["SuccessMessage"] = "Your feedback has been recorded successfully!";
-                    return RedirectToAction("LearnerDashboard"); // Redirect to Learner Dashboard
+                    return RedirectToAction("Courses"); // Redirect to Learner Dashboard
                 }
                 catch (Exception ex)
                 {
@@ -572,7 +573,8 @@ namespace TestApp.Controllers
             {
                 return false;
             }
-            Console.WriteLine("coming course Id + "+ courseID);
+
+            Console.WriteLine("coming course Id + " + courseID);
 
             // Materialize the result before applying LINQ
             var learners = _context.Learners
@@ -581,11 +583,21 @@ namespace TestApp.Controllers
                 .Select(l => l.LearnerID)
                 .ToList();
             var prereq = _context.CoursePrereqs.FromSqlRaw("EXEC dbo.GetCoursePreq @CourseID = {0}", courseID).ToList();
-            Console.WriteLine("prereq number "+ prereq.Count);
-            
-            Console.WriteLine("learners number "+ learners.Count);
+            Console.WriteLine("prereq number " + prereq.Count);
+
+            Console.WriteLine("learners number " + learners.Count);
 
             return prereq.Count == 0 || learners.Contains(learnerId.Value);
+        }
+
+        public IActionResult Activities(int courseId, int moduleId)
+        {
+            var activities = _context.Learning_activities
+                .FromSqlRaw("EXEC dbo.GetActivities @CourseID = {0}, @ModuleID = {1}", courseId, moduleId).ToList();
+            IntDTO course = new IntDTO { Value = courseId };
+            IntDTO module = new IntDTO { Value = moduleId };
+            var tuple = new Tuple<List<Learning_activity>, IntDTO, IntDTO>(activities, course, module);
+            return View(tuple);
         }
     }
 }
