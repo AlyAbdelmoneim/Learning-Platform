@@ -20,6 +20,11 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<Admin> Admins { get; set; }
 
+    public MyDbContext(DbSet<Admin> admins)
+    {
+        Admins = admins;
+    }
+
     public virtual DbSet<Assessment> Assessments { get; set; }
 
     public virtual DbSet<Badge> Badges { get; set; }
@@ -96,12 +101,17 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<Target_trait> Target_traits { get; set; }
 
+    public virtual DbSet<AssessmentDTO> AssessmentDTOs { get; set; }
+
+    public DbSet<HighestGradeDTO> HighestGradeDTOs { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost,1433;Database=ProjectDatabase6;User Id=SA;Password=Password_123;TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=ProjectDatabase6;Trusted_Connection=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AssessmentDTO>().HasNoKey();
+        modelBuilder.Entity<HighestGradeDTO>().HasNoKey();
         modelBuilder.Entity<Achievement>(entity =>
         {
             entity.HasKey(e => e.AchievementID).HasName("PK__Achievem__276330E082B30C98");

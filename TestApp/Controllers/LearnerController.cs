@@ -4,6 +4,8 @@ using TestApp.Context;
 using TestApp.Models;
 using System.Linq;
 using Microsoft.Data.SqlClient;
+using static System.Formats.Asn1.AsnWriter;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace TestApp.Controllers
 {
@@ -329,5 +331,38 @@ namespace TestApp.Controllers
             _context.Database.ExecuteSqlRaw("EXECUTE dbo.Post @LearnerID = {0}, @DiscussionID = {1}, @Post = {2}", learnerID, forumID2, content);
             return RedirectToAction("Posts", new { forumID = forumID2 });
         }
+
+        public IActionResult Assessments()
+        {
+            return View();
+        }
+
+        public IActionResult AssessmentsListModified(int courseID, int moduleID)
+        {
+            var learnerID = HttpContext.Session.GetInt32("UserID");
+            if (learnerID == null)
+            {
+                Console.WriteLine("LearnerID is null");
+                return View("Error");
+            }
+
+            var assessmentList = _context.AssessmentDTOs
+                .FromSqlRaw("EXECUTE dbo.AssessmentListModified @LearnerID = {0}, @CourseID = {1}, @ModuleID = {2}",
+                            learnerID, courseID, moduleID)
+                .ToList();
+
+            return View(assessmentList);
+        }
+
+        public IActionResult HighestGrades()
+        {
+            var highestGrades = _context.HighestGradeDTOs
+                .FromSqlRaw("EXEC Highestgrade")
+                .ToList();
+
+            return View(highestGrades);
+        }
+
+
     }
 }

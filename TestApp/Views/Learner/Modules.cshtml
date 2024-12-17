@@ -9,8 +9,8 @@
         <tr>
             <th>Title</th>
             <th>Difficulty</th>
-            <th>Assessments</th>
             <th>Content URL</th>
+            <th>Assessments</th>
             <th>Actions</th>
         </tr>
         </thead>
@@ -20,8 +20,10 @@
             <tr>
                 <td>@module.Title</td>
                 <td>@module.difficulty</td>
-                <td>@module.Assessments</td>
                 <td>@module.contentURL</td>
+                <td>
+                   <a asp-action="AssessmentsListModified" asp-controller="Learner" asp-route-courseID="@module.CourseID" asp-route-moduleID="@module.ModuleID" class="btn btn-primary">View Assessments</a>
+                </td>
                 
                 <td>
                     <a asp-action="DiscussionForums" asp-controller="Learner" asp-route-courseID="@module.CourseID" asp-route-moduleID="@module.ModuleID" class="btn btn-primary">View Discussion Forums</a>
