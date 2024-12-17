@@ -85,7 +85,7 @@ namespace TestApp.Controllers
         [HttpGet]
         public IActionResult LearnersPage()
         {
-            var learners = _context.Learners.ToList();
+            var learners = _context.Learners.Where(l => l.email != null).ToList();
             return View(learners);
         }
 
