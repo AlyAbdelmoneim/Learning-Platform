@@ -1,0 +1,39 @@
+@model List<TestApp.Models.ViewModels.SkillMasteryViewModel>
+
+<h1>Skill Mastery Quests</h1>
+
+<!-- Add button to create a new personalization profile -->
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Quest ID</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Difficulty Level</th>
+            <th>Criteria</th>
+            <th>Skill</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var quest in Model)
+        {
+            <tr>
+                <td>@quest.QuestID</td>
+                <td>@quest.title</td>
+                <td>@quest.quest_description</td>
+                <td>@quest.difficulty_level</td>
+                <td>@quest.criteria</td>
+                <td>@quest.skill</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Available Skill Mastery Quests</p>
+}
+<a asp-action="AddSkillMasteryQuest" asp-controller="Instructor" class="btn btn-primary">Add Skill Mastery Quest</a>
+<a asp-action="DeleteQuests1" asp-controller="Instructor" class="btn btn-primary">Delete For a specific criteria</a>

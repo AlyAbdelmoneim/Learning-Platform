@@ -7,6 +7,21 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/TestApp.styles.css" asp-append-version="true"/>
+
+    <!-- Custom CSS for purple button -->
+    <style>
+        .custom-purple {
+            background-color: #6f42c1; /* Purple */
+            border-color: #6f42c1; /* Purple border */
+            color: white; /* White text */
+        }
+        .custom-purple:hover {
+            background-color: #5a2a94; /* Darker purple on hover */
+            border-color: #5a2a94; /* Darker purple on hover */
+            color: white; /* White text on hover */
+        }
+    </style>
+
 </head>
 <body>
 <header>
@@ -44,6 +59,17 @@
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Custom script for dismissing alerts -->
+    <script>
+        $(document).ready(function () {
+            // Close the alert message when the "x" is clicked
+            $('.alert .close').click(function () {
+                $(this).closest('.alert').fadeOut();
+            });
+        });
+    </script>
+
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -20,6 +20,7 @@
             <td>@learner.email</td>
             <td>
                 <button onclick="window.location.href='@Url.Action("PersonalizationProfile", "Instructor", new { learnerId = learner.LearnerID })'" class="btn btn-info">View Profile</button>
+                <button onclick="window.location.href='@Url.Action("LearnersPastCourses", "Instructor", new { learnerId = learner.LearnerID })'" class="btn btn-info">Completed Courses</button>
             </td>
         </tr>
     }

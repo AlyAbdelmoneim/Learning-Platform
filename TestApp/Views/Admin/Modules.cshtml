@@ -1,8 +1,8 @@
-@model List<TestApp.Models.Module>
+@model Tuple<List<TestApp.Models.Module>, TestApp.Models.ViewModels.IntDTO>
 
 <h1>Modules</h1>
 
-@if (Model != null && Model.Any())
+@if (Model != null && Model.Item1.Any())
 {
     <table class="table">
         <thead>
@@ -15,7 +15,7 @@
         </tr>
         </thead>
         <tbody>
-        @foreach (var module in Model)
+        @foreach (var module in Model.Item1)
         {
             <tr>
                 <td>@module.Title</td>
@@ -24,7 +24,7 @@
                 <td>@module.contentURL</td>
                 
                 <td>
-                    <a asp-action="DiscussionForums" asp-controller="Admin" asp-route-courseID="@module.CourseID" asp-route-moduleID="@module.ModuleID" class="btn btn-primary">View Discussion Forums</a>
+                    <a asp-action="DiscussionForums" asp-controller="Admin" asp-route-courseID="@Model.Item2.Value" asp-route-moduleID="@module.ModuleID" class="btn btn-primary">View Discussion Forums</a>
                 </td>
             </tr>
         }

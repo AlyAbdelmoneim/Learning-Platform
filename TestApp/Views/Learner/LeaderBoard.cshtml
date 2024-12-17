@@ -1,0 +1,31 @@
+﻿@model IEnumerable<TestApp.Models.ViewModels.RankingViewModel>
+
+<h2>Leaderboard</h2>
+
+@if (ViewBag.CurrentLearnerRank != null)
+{
+    <div class="alert alert-info">
+        <strong>Your Rank:</strong> Rank #@ViewBag.CurrentLearnerRank.rankNum
+        with @ViewBag.CurrentLearnerRank.total_points points.
+    </div>
+}
+
+<table class="table table-striped">
+    <thead>
+    <tr>   
+        <th>Rank</th>
+        <th>Learner ID</th>
+        <th>Total Points</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.rankNum</td>
+            <td>@item.LearnerID</td>
+            <td>@item.total_points</td>
+        </tr>
+    }
+    </tbody>
+</table>

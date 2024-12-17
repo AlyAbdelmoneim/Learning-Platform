@@ -23,7 +23,14 @@ builder.Services.AddDbContext<MyDbContext>(options =>
         .LogTo(Console.WriteLine, LogLevel.Information));
 
 
+builder.Logging.ClearProviders(); // Optional: Clear default providers
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

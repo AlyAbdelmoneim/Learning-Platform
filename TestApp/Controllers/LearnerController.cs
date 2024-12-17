@@ -4,6 +4,7 @@ using TestApp.Context;
 using TestApp.Models;
 using System.Linq;
 using Microsoft.Data.SqlClient;
+using TestApp.Models.ViewModels;
 using static System.Formats.Asn1.AsnWriter;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
@@ -95,31 +96,23 @@ namespace TestApp.Controllers
         public IActionResult DeleteAccount()
         {
             var learnerID = HttpContext.Session.GetInt32("UserID");
-            // var learnerIdString = HttpContext.Session.GetString("LearnerID");
-            // if (string.IsNullOrEmpty(learnerIdString) || !int.TryParse(learnerIdString, out int learnerId))
-            // {
-            //     TempData["ErrorMessage"] = "Error: Learner session is not valid.";
-            //     return RedirectToAction("LearnerDashboard");
-            // }
-
             var learner = _context.Learners.FirstOrDefault(l => l.LearnerID == learnerID);
             if (learner != null)
             {
-                _context.Learners.Remove(learner);
+                learner.email = null;
                 _context.SaveChanges();
-                HttpContext.Session.Clear(); // Clear session after deletion
-                TempData["SuccessMessage"] = "Your account has been deleted.";
+                HttpContext.Session.Clear(); // Clear session after setting email to null
+                TempData["SuccessMessage"] = "Your account has been deactivated.";
                 return RedirectToAction("Login", "Account"); // Redirect to login page
             }
 
-            TempData["ErrorMessage"] = "Error deleting account. Please try again.";
+            TempData["ErrorMessage"] = "Error deactivating account. Please try again.";
             return RedirectToAction("LearnerDashboard");
         }
 
         [HttpGet]
         public IActionResult EditProfile()
         {
-            // Assuming the user is authenticated and their LearnerID is stored in the session
             var learnerId = HttpContext.Session.GetInt32("UserID");
             var learner = _context.Learners.FirstOrDefault(l => l.LearnerID == learnerId);
 
@@ -234,14 +227,17 @@ namespace TestApp.Controllers
             {
                 return RedirectToAction("Login", "Account"); // Redirect to login if no learnerId is found in session
             }
+
             var goals = _context.Learning_goals.FromSqlRaw("EXEC dbo.MyGoals @LearnerID = {0}", learnerId).ToList();
             return View(goals); // Pass the goals to the View
         }
+
         // GET: AddGoal
         public IActionResult AddGoal()
         {
             return View();
         }
+
         [HttpPost]
         public IActionResult AddGoal(string GoalDescription, DateTime Deadline, string GoalStatus)
         {
@@ -255,10 +251,13 @@ namespace TestApp.Controllers
 
             try
             {
+                Console.Write("learner id: " + learnerId.Value + " goal description: " + GoalDescription +
+                              " deadline: " + Deadline + " goal status: " + GoalStatus);
                 // Execute the stored procedure
                 _context.Database.ExecuteSqlRaw(
                     "EXEC CreateAndAssignGoal @LearnerID = {0}, @GoalStatus = {1}, @Deadline = {2}, @GoalDescription = {3}",
-                    learnerId.Value, GoalStatus, Deadline, GoalDescription);
+                    learnerId.Value, GoalStatus, Deadline.Date, GoalDescription);
+
 
                 TempData["SuccessMessage"] = "Goal added successfully!";
                 return RedirectToAction("LearnerGoals");
@@ -269,13 +268,13 @@ namespace TestApp.Controllers
                 return View();
             }
         }
-        
+
         [Route("LearningPath/{profileID}")]
         public IActionResult LearningPath(int profileID)
         {
             // Retrieve the learner ID from the session
             var learnerId = HttpContext.Session.GetInt32("UserID");
-            Console.WriteLine("Received ProfileID: " + profileID);  // Debugging line
+            Console.WriteLine("Received ProfileID: " + profileID); // Debugging line
 
             if (!learnerId.HasValue)
             {
@@ -283,35 +282,46 @@ namespace TestApp.Controllers
             }
 
             // Execute the stored procedure to retrieve learning path data
-            var path = _context.Learning_paths.FromSqlRaw("EXEC dbo.CurrentPath @LearnerID = {0}, @ProfileID = {1}", learnerId, profileID).ToList();
-            
-            Console.WriteLine("size of path" + path.Count + " for learner id" + learnerId + " and profile id" + profileID);
+            var path = _context.Learning_paths
+                .FromSqlRaw("EXEC dbo.CurrentPath @LearnerID = {0}, @ProfileID = {1}", learnerId, profileID).ToList();
+
+            Console.WriteLine("size of path" + path.Count + " for learner id" + learnerId + " and profile id" +
+                              profileID);
 
             return View(path); // Pass the learning paths to the view
         }
+
         public IActionResult Courses()
         {
             var learnerId = HttpContext.Session.GetInt32("UserID");
             var courses = _context.Courses.FromSqlRaw("Exec dbo.EnrolledCourses @LearnerID = {0}", learnerId).ToList();
             return View(courses);
         }
+
         public IActionResult Modules(int courseID)
         {
             Console.WriteLine("Course ID: " + courseID);
-            var modules = _context.Modules.FromSqlRaw("Exec dbo.GetModulesForCourse @CourseID = {0}", courseID).ToList();
+            var modules = _context.Modules.FromSqlRaw("Exec dbo.GetModulesForCourse @CourseID = {0}", courseID)
+                .ToList();
             return View(modules);
         }
+
         public IActionResult DiscussionForums(int courseID, int moduleID)
         {
-            var forums = _context.Discussion_forums.FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID).ToList();
+            var forums = _context.Discussion_forums
+                .FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID)
+                .ToList();
             return View(forums);
         }
+
         public IActionResult Posts(int forumID)
         {
-            var posts = _context.LearnerDiscussions.FromSqlRaw("Exec dbo.GetPostsForForum @ForumID = {0}" , forumID).ToList();
+            var posts = _context.LearnerDiscussions.FromSqlRaw("Exec dbo.GetPostsForForum @ForumID = {0}", forumID)
+                .ToList();
             var tuple = new Tuple<List<LearnerDiscussion>, int>(posts, forumID);
             return View(tuple);
         }
+
         public IActionResult AddPost(int forumID)
         {
             Console.WriteLine("coming forum id: " + forumID);
@@ -326,9 +336,11 @@ namespace TestApp.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+
             int forumID2 = Int32.Parse(forumID);
             Console.WriteLine("forum id: " + forumID + " content: " + content);
-            _context.Database.ExecuteSqlRaw("EXECUTE dbo.Post @LearnerID = {0}, @DiscussionID = {1}, @Post = {2}", learnerID, forumID2, content);
+            _context.Database.ExecuteSqlRaw("EXECUTE dbo.Post @LearnerID = {0}, @DiscussionID = {1}, @Post = {2}",
+                learnerID, forumID2, content);
             return RedirectToAction("Posts", new { forumID = forumID2 });
         }
 
@@ -364,5 +376,263 @@ namespace TestApp.Controllers
         }
 
 
+
+        //new code
+        // View notifications for a learner
+        public IActionResult Notifications()
+        {
+            var learnerID = HttpContext.Session.GetInt32("UserID");
+
+            if (!learnerID.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var notifications = _context.SystemNotifications
+                .FromSqlRaw("EXEC dbo.GetNotifications @LearnerID = {0}", learnerID)
+                .ToList();
+            Console.WriteLine("EL COUNT AHOHHHHHH");
+            Console.WriteLine(notifications.Count);
+            Console.WriteLine(learnerID);
+            return View(notifications);
+        }
+
+        // Send reminders for upcoming goals
+        [HttpPost]
+        public IActionResult SendGoalReminders()
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!learnerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("GoalReminder", connection))
+                {
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@LearnerID", learnerId);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            TempData["Message"] = "Goal reminders sent successfully.";
+            return RedirectToAction("Notifications");
+        }
+
+        // Mark a notification as read
+        [HttpPost]
+        public IActionResult MarkNotificationAsRead(int notificationId)
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!learnerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("NotificationUpdate", connection))
+                {
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@LearnerID", learnerId);
+                    command.Parameters.AddWithValue("@NotificationID", notificationId);
+                    command.Parameters.AddWithValue("@ReadStatus", true);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            return RedirectToAction("Notifications");
+        }
+
+        public IActionResult GetCompletedCourses()
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            var courses = _context.Courses.FromSqlRaw("EXEC dbo.CompletedCourses @LearnerID = {0}", learnerId).ToList();
+            return View(courses);
+        }
+
+        [HttpGet]
+        public IActionResult AddEmotionalFeedback(int activityId)
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            if (!learnerId.HasValue)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var model = new Emotional_feedback
+            {
+                activityID = activityId,
+                LearnerID = learnerId.Value
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        // public IActionResult AddEmotionalFeedback(Emotional_feedback feedback)
+        // {
+        //     if (!ModelState.IsValid)
+        //     {
+        //         return View(feedback);
+        //     }
+        //
+        //     using (SqlConnection connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+        //     {
+        //         connection.Open();
+        //         using (SqlCommand command = new SqlCommand("AddEmotionalFeedback", connection))
+        //         {
+        //             command.CommandType = System.Data.CommandType.StoredProcedure;
+        //             command.Parameters.AddWithValue("@LearnerID", feedback.LearnerID);
+        //             command.Parameters.AddWithValue("@ActivityID", feedback.activityID);
+        //             command.Parameters.AddWithValue("@EmotionalState", feedback.emotional_state);
+        //
+        //             command.ExecuteNonQuery();
+        //         }
+        //     }
+        //
+        //     TempData["SuccessMessage"] = "Your feedback has been recorded successfully!";
+        //     return RedirectToAction("LearnerDashboard");
+        // }
+        //
+        public IActionResult Leaderboard(int leaderboardId)
+        {
+            Console.WriteLine("Leaderboard Id is " + leaderboardId);
+            var leaderboard = _context.RankingViewModels
+                .FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
+
+            if (leaderboard == null)
+            {
+                return RedirectToAction("LearnerDashboard");
+            }
+
+            return View(leaderboard);
+        }
+
+        [HttpPost]
+        public IActionResult SubmitFeedback(int activityId, int learnerId, string emotionalState)
+        {
+            if (ModelState.IsValid) // Check if form data is valid
+            {
+                try
+                {
+                    // Database Connection
+                    using (SqlConnection connection =
+                           new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+                    {
+                        connection.Open();
+
+                        // Execute Stored Procedure
+                        using (SqlCommand command = new SqlCommand("ActivityEmotionalFeedback", connection))
+                        {
+                            command.CommandType = System.Data.CommandType.StoredProcedure;
+                            command.Parameters.AddWithValue("@LearnerID", learnerId);
+                            command.Parameters.AddWithValue("@ActivityID", activityId);
+                            command.Parameters.AddWithValue("@timestamp", DateTime.Now); // Current timestamp
+                            command.Parameters.AddWithValue("@emotionalstate",
+                                emotionalState); // Parameter names match stored procedure
+
+                            command.ExecuteNonQuery(); // Execute the stored procedure
+                        }
+                    }
+
+                    Console.WriteLine(DateTime.Now);
+                    // Success Message and Redirect
+                    TempData["SuccessMessage"] = "Your feedback has been recorded successfully!";
+                    return RedirectToAction("Courses"); // Redirect to Learner Dashboard
+                }
+                catch (Exception ex)
+                {
+                    // Log the error (optional for debugging)
+                    TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+                    return RedirectToAction("AddEmotionalFeedback", new { activityId = activityId });
+                }
+            }
+
+            // Handle Invalid Model State
+            TempData["ErrorMessage"] = "Invalid feedback data. Please check your inputs.";
+            return RedirectToAction("AddEmotionalFeedback", new { activityId = activityId });
+        }
+
+
+        public IActionResult GetAvailableCourses()
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+            var courses = _context.Courses.FromSqlRaw(
+                "EXEC dbo.GetAvailableCourses @LearnerID = {0}", learnerId
+            ).ToList();
+
+            return View("EnrollInNewCourses", courses);
+        }
+
+        [HttpPost]
+        public IActionResult EnrollInCourse(int CourseID)
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!hasCompletedPrereq(CourseID))
+            {
+                TempData["ErrorMessage"] = "You have not completed the prerequisites for this course.";
+                return RedirectToAction("GetAvailableCourses");
+            }
+
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC dbo.EnrollLearnerInCourse @LearnerID = {0}, @CourseID = {1}",
+                    learnerId, CourseID
+                );
+                TempData["SuccessMessage"] = "You have successfully enrolled in the course.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Enrollment failed. Please try again.";
+            }
+
+            return RedirectToAction("GetAvailableCourses");
+        }
+
+        public bool hasCompletedPrereq(int courseID)
+        {
+            var learnerId = HttpContext.Session.GetInt32("UserID");
+
+            if (!learnerId.HasValue)
+            {
+                return false;
+            }
+
+            Console.WriteLine("coming course Id + " + courseID);
+
+            // Materialize the result before applying LINQ
+            var learners = _context.Learners
+                .FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID = {0}", courseID)
+                .AsEnumerable() // Forces composition to be in-memory
+                .Select(l => l.LearnerID)
+                .ToList();
+            var prereq = _context.CoursePrereqs.FromSqlRaw("EXEC dbo.GetCoursePreq @CourseID = {0}", courseID).ToList();
+            Console.WriteLine("prereq number " + prereq.Count);
+
+            Console.WriteLine("learners number " + learners.Count);
+
+            return prereq.Count == 0 || learners.Contains(learnerId.Value);
+        }
+
+        public IActionResult Activities(int courseId, int moduleId)
+        {
+            var activities = _context.Learning_activities
+                .FromSqlRaw("EXEC dbo.GetActivities @CourseID = {0}, @ModuleID = {1}", courseId, moduleId).ToList();
+            IntDTO course = new IntDTO { Value = courseId };
+            IntDTO module = new IntDTO { Value = moduleId };
+            var tuple = new Tuple<List<Learning_activity>, IntDTO, IntDTO>(activities, course, module);
+            return View(tuple);
+        }
     }
 }

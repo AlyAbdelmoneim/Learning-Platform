@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using TestApp.Context;
 using TestApp.Models;
 using System.Linq;
+using TestApp.Models.ViewModels;
+using Microsoft.Data.SqlClient;
 
 namespace TestApp.Controllers
 {
@@ -27,7 +29,7 @@ namespace TestApp.Controllers
                 var admin = _context.Admins.FirstOrDefault(a => a.AdminID == adminId.Value);
                 if (admin != null)
                 {
-                    return View(admin);  // Return the admin's profile data to the view
+                    return View(admin); // Return the admin's profile data to the view
                 }
             }
 
@@ -46,7 +48,7 @@ namespace TestApp.Controllers
                 var admin = _context.Admins.FirstOrDefault(a => a.AdminID == adminId.Value);
                 if (admin != null)
                 {
-                    return View(admin);  // Pass the admin model to the edit view
+                    return View(admin); // Pass the admin model to the edit view
                 }
             }
 
@@ -115,6 +117,7 @@ namespace TestApp.Controllers
                 _context.Learners.Remove(learner);
                 _context.SaveChanges();
             }
+
             return RedirectToAction("LearnersPage");
         }
 
@@ -128,6 +131,7 @@ namespace TestApp.Controllers
                 _context.Instructors.Remove(instructor);
                 _context.SaveChanges();
             }
+
             return RedirectToAction("InstructorsPage");
         }
 
@@ -146,6 +150,7 @@ namespace TestApp.Controllers
 
             return RedirectToAction("PersonalizationProfile", new { learnerId });
         }
+
         // Delete Admin Profile
         [HttpPost]
         [ActionName("DeleteAdminProfile")]
@@ -164,42 +169,72 @@ namespace TestApp.Controllers
             TempData["ErrorMessage"] = "admin not found.";
             return RedirectToAction("AdminDashboard", new { AdminID = adminId });
         }
+
         public IActionResult Courses()
         {
             var courses = _context.Courses.ToList();
             return View(courses);
         }
+
         public IActionResult Modules(int courseID)
         {
             Console.WriteLine("Course ID: " + courseID);
-            var modules = _context.Modules.FromSqlRaw("Exec dbo.GetModulesForCourse @CourseID = {0}", courseID).ToList();
-            return View(modules);
+            var modules = _context.Modules.FromSqlRaw("Exec dbo.GetModulesForCourse @CourseID = {0}", courseID)
+                .ToList();
+            Console.WriteLine("In modules: courseID" + courseID);
+            IntDTO courseId = new IntDTO();
+            courseId.Value = courseID;
+            return View(Tuple.Create(modules, courseId));
         }
+
         public IActionResult DiscussionForums(int courseID, int moduleID)
         {
-            var forums = _context.Discussion_forums.FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID).ToList();
-            return View(forums);
+            var forums = _context.Discussion_forums
+                .FromSqlRaw("Exec dbo.GetDiscussionForums @CourseID = {0}, @ModuleID = {1}", courseID, moduleID)
+                .ToList();
+            Console.WriteLine("forums size" + forums.Count);
+            Console.WriteLine("in discussion : courseID" + courseID + "moduleID" + moduleID);
+
+            IntDTO courseId = new IntDTO();
+            courseId.Value = courseID;
+            IntDTO moduleId = new IntDTO();
+            moduleId.Value = moduleID;
+            Console.WriteLine("in discussion using DTO courseID: " + courseId.Value + ", moduleID: " + moduleId.Value);
+            return View(Tuple.Create(forums, courseId, moduleId));
         }
+
         public IActionResult Posts(int forumID)
         {
-            var posts = _context.LearnerDiscussions.FromSqlRaw("Exec dbo.GetPostsForForum @ForumID = {0}" , forumID).ToList();
+            var posts = _context.LearnerDiscussions.FromSqlRaw("Exec dbo.GetPostsForForum @ForumID = {0}", forumID)
+                .ToList();
             var tuple = new Tuple<List<LearnerDiscussion>, int>(posts, forumID);
             return View(tuple);
         }
+
         public IActionResult AddDiscussionForum(int courseID, int moduleID)
         {
-            ViewData["CourseID"] = courseID;
-            ViewData["ModuleID"] = moduleID;
-            return View();
+            // ViewData["CourseID"] = courseID;
+            // ViewData["ModuleID"] = moduleID;
+            Console.WriteLine("in add discussion1 forum: courseID" + courseID + "moduleID" + moduleID);
+            Console.WriteLine("Course ID: " + courseID + ", Module ID: " + moduleID);
+            IntDTO courseId = new IntDTO();
+            courseId.Value = courseID;
+            IntDTO moduleId = new IntDTO();
+            moduleId.Value = moduleID;
+            return View(Tuple.Create(courseId, moduleId));
         }
+
         [HttpPost]
-        public IActionResult AddDiscussionForum(Discussion_forum forum)
+        public IActionResult AddDiscussionForum(int courseId, int moduleId, string title, string description)
         {
+            Console.WriteLine("in add discussion2 forum: courseID" + courseId + "moduleID" + moduleId);
             try
             {
-                _context.Database.ExecuteSqlRaw("Exec dbo.CreateDiscussion @ModuleID = {0}, @CourseID = {1}, @title = {2}, @description = {3}", forum.ModuleID, forum.CourseID, forum.title, forum.forum_description);
+                _context.Database.ExecuteSqlRaw(
+                    "Exec dbo.CreateDiscussion @ModuleID = {0}, @CourseID = {1}, @title = {2}, @description = {3}",
+                    moduleId, courseId, title, description);
                 TempData["SuccessMessage"] = "Discussion forum added successfully!";
-                return RedirectToAction("DiscussionForums", new { courseID = forum.CourseID, moduleID = forum.ModuleID });
+                return RedirectToAction("DiscussionForums", new { courseID = courseId, moduleID = moduleId });
             }
             catch (Exception ex)
             {
@@ -207,6 +242,104 @@ namespace TestApp.Controllers
                 return View();
             }
         }
+
+
+        //the working one 
+        // [HttpGet]
+        // public IActionResult Notifications()
+        // {
+        //     var notifications = _context.SystemNotifications.ToList();
+        //     return View(notifications);
+        // }
+
+
+        //testing this one to show all notifications for the admin 
+        //
+        // public IActionResult Notifications()
+        // {
+        //     var notifications = _context.SystemNotifications.FromSqlRaw("EXEC dbo.ViewAllNotifications").ToList();
+        //     return View(notifications);
+        // }
+        //
+        //
+        // // Action to mark a notification as read
+        // [HttpPost]
+        // public IActionResult MarkAsRead(int notificationId)
+        // {
+        //     var notification = _context.SystemNotifications.FirstOrDefault(n => n.ID == notificationId);
+        //
+        //     if (notification == null)
+        //     {
+        //         TempData["ErrorMessage"] = "Notification not found.";
+        //         return RedirectToAction("Notifications");
+        //     }
+        //
+        //     notification.ReadStatus = true; // Mark the notification as read
+        //     _context.SaveChanges(); // Save changes to the database
+        //
+        //     TempData["SuccessMessage"] = "Notification marked as read.";
+        //     return RedirectToAction("Notifications"); // Redirect back to the notifications page
+        // }
+
+        public IActionResult Leaderboard(int leaderboardId)
+        {
+            Console.WriteLine("Leaderboard Id is " + leaderboardId);
+            var leaderboard = _context.RankingViewModels
+                .FromSqlRaw("EXEC dbo.LeaderboardRank @LeaderboardID = {0}", leaderboardId).ToList();
+
+            if (leaderboard == null || !leaderboard.Any())
+            {
+                return RedirectToAction("LeaderBoard");
+            }
+
+            return View(leaderboard);
+        }
+
+
+        //the working one 
+        // [HttpGet]
+        // public IActionResult Notifications()
+        // {
+        //     var notifications = _context.SystemNotifications.ToList();
+        //     return View(notifications);
+        // }
+
+
+        //testing this one to show all notifications for the admin 
+
+        public IActionResult Notifications()
+        {
+            var notifications = _context.SystemNotifications.FromSqlRaw("EXEC dbo.ViewAllNotifications").ToList();
+            return View(notifications);
+        }
+
+
+        // Action to mark a notification as read
+        [HttpPost]
+        public IActionResult MarkAsRead(int notificationId)
+        {
+            var notification = _context.SystemNotifications.FirstOrDefault(n => n.ID == notificationId);
+
+            if (notification == null)
+            {
+                TempData["ErrorMessage"] = "Notification not found.";
+                return RedirectToAction("Notifications");
+            }
+
+            notification.ReadStatus = true; // Mark the notification as read
+            _context.SaveChanges(); // Save changes to the database
+
+            TempData["SuccessMessage"] = "Notification marked as read.";
+            return RedirectToAction("Notifications"); // Redirect back to the notifications page
+        }
+
+        public IActionResult FeedbackTrends()
+        {
+            var feedbackTrends = _context.Emotional_feedbacks
+                .FromSqlRaw("EXEC dbo.EmotionalTrendAnalysis")
+                .ToList();
+
+            return View(feedbackTrends);
+        }
     }
-    
 }

@@ -16,6 +16,7 @@
             <th>Assessments</th>
             <th>Content URL</th>
             <th>Actions</th>
+            <th>Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -41,3 +42,5 @@ else
 {
     <p>No Modules found.</p>
 }
+<a asp-action="AddModule1" asp-controller="Instructor" asp-route-courseID="@Model.FirstOrDefault()?.CourseID"
+   class="btn btn-primary">Add Module</a>

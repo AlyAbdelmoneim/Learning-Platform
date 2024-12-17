@@ -5,6 +5,7 @@ namespace TestApp.Models;
 
 public partial class Learner
 {
+    
     public int LearnerID { get; set; }
 
     public string? first_name { get; set; }

@@ -1,0 +1,39 @@
+﻿@model IEnumerable<TestApp.Models.Emotional_feedback>
+
+<h2 class="text-center">Emotional Feedback Trends</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Learner ID</th>
+        <th>Emotional State</th>
+        <th>Feedback Timestamp</th>
+    </tr>
+    </thead>
+    <tbody>
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var trend in Model.OrderByDescending(t => t.feedback_timestamp))
+        {
+            <tr>
+                <td>@trend.LearnerID</td>
+                <td>@trend.emotional_state</td>
+                <td>@trend.feedback_timestamp</td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr>
+            <td colspan="3" class="text-center">No feedback trends available for the selected criteria.</td>
+        </tr>
+    }
+    </tbody>
+</table>

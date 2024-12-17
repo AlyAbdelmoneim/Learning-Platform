@@ -1,0 +1,73 @@
+﻿<style>
+    .badge-success {
+        color: black; /* Text color for Read notifications */
+        background-color: #28a745; /* Default success background color */
+    }
+</style>
+
+<style>
+    .badge-warning {
+        color: black; /* Text color for Unread notifications */
+        background-color: #ffc107;
+    }
+</style>
+
+@model List<SystemNotification>
+
+<h2>Admin Notifications</h2>
+
+@if (Model != null && Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Notification Message</th>
+                <th>Timestamp</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var notification in Model)
+            {
+                <tr>
+                    <td>@notification.notification_message</td>
+                    <td>@notification.notification_timestamp.ToString()</td>
+                    <td>
+                        @if (!notification.ReadStatus.GetValueOrDefault())
+                        {
+                            <span class="badge badge-warning">Unread</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-success">Read</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!notification.ReadStatus.GetValueOrDefault())
+                        {
+                            <form method="post" action="@Url.Action("MarkAsRead", "Admin")">
+                                <input type="hidden" name="notificationId" value="@notification.ID"/>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    Mark as Read
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-secondary btn-sm" disabled>
+                                Already Read
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p>No notifications found.</p>
+}

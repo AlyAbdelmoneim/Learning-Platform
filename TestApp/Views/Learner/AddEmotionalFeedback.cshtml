@@ -1,0 +1,37 @@
+﻿@model TestApp.Models.Emotional_feedback
+
+<h2>Share Emotional Feedback</h2>
+
+<form asp-action="SubmitFeedback" asp-controller="Learner" method="post">
+    @Html.AntiForgeryToken()
+
+    <!-- Hidden Fields for LearnerID and ActivityID -->
+    <input type="hidden" name="learnerId" value="@Model.LearnerID" />
+    <input type="hidden" name="activityId" value="@Model.activityID" />
+    <input type="hidden" name="timestamp" value="@DateTime.Now" />
+
+    <!-- Emotional State Dropdown -->
+    <div class="form-group">
+        <label for="emotionalState">How did you feel about this activity?</label>
+        <select id="emotionalState" name="emotionalState" class="form-control" required>
+            <option value="">Select your emotional state</option>
+            <option value="Happy">Happy</option>
+            <option value="Confident">Confident</option>
+            <option value="Confused">Confused</option>
+            <option value="Frustrated">Frustrated</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+</form>
+
+<!-- Display Success or Error Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}

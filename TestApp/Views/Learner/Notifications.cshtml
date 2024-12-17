@@ -1,0 +1,77 @@
+﻿@model List<SystemNotification>
+<h2>Learner Notifications</h2>
+@if (Model != null && Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Notification Message</th>
+                <th>Timestamp</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var notification in Model)
+            {
+                <tr>
+                    <td>@notification.notification_message</td>
+                    <td>@notification.notification_timestamp.ToString()</td>
+                    <td>
+                        @if (!notification.ReadStatus.GetValueOrDefault())
+                        {
+                            <span class="badge badge-warning">Not Read</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-success">Read</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!notification.ReadStatus.GetValueOrDefault())
+                        {
+                            <form method="post" action="@Url.Action("MarkNotificationAsRead", "Learner")">
+                                <input type="hidden" name="notificationId" value="@notification.ID" />
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    Mark as Read
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-secondary btn-sm" disabled>
+                                Already Read
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p>No notifications found.</p>
+}
+
+<!-- Accompanying CSS Styles -->
+<style>
+    .badge-success {
+        color: black;
+        background-color: #28a745;
+    }
+    .badge-warning {
+        color: black;
+        background-color: #ffc107;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+</style>
