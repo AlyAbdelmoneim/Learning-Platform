@@ -624,21 +624,22 @@ namespace TestApp.Controllers
             return RedirectToAction("Courses");
         }
 
-        // Action to view learners who completed prerequisites for a specific course
-        /*public IActionResult CompletedPreq(int courseId)
-        {
-            // Create a list to hold learners who completed prerequisites
-            List<Learner> learners = new List<Learner>();
+         // Action to view learners who completed prerequisites for a specific course
+         public IActionResult CompletedPreq(int courseId)
+         {
+             // Create a list to hold learners who completed prerequisites
+             List<Learner> learners = new List<Learner>();
 
-            // Call the stored procedure to get learners who completed prerequisites
-            learners = _context.Learners.FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId).ToList();
+             // Call the stored procedure to get learners who completed prerequisites
+             learners = _context.Learners.FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId).ToList();
 
-            // Return the view with the list of learners
-            return View(learners);
-        }*/
+             // Return the view with the list of learners
+             return View(learners);
+         }
 
         public IActionResult ViewLearners(int courseId)
         {
+            Console.WriteLine("Course ID: " + courseId);
             // Get the list of learners who completed the prerequisites for the course
             var learners = _context.Learners.FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId)
                 .Select(l => new LearnerViewModel
@@ -667,8 +668,9 @@ namespace TestApp.Controllers
             {
                 Console.WriteLine($"Learner: {learner.LearnerID}, {learner.FirstName} {learner.LastName}");
             }*/
+            Console.WriteLine("size of learners: " + learners.Count);
 
-            return PartialView("CompletedPreq", learners);
+            return PartialView("CompletedPreq");
 
         }
 
