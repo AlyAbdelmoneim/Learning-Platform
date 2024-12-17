@@ -1238,18 +1238,18 @@ GO
 
 GO
 CREATE PROCEDURE GetLearnersWithCompletedPrerequisites
-    @CourseID INT
+@CourseID INT
 AS
 BEGIN
     -- Get the list of learners who have completed all prerequisites for the course
-    SELECT DISTINCT ce.LearnerID, l.first_name , l.last_name 
+    SELECT DISTINCT l.*
     FROM Course_enrollment ce
-    JOIN Learner l ON ce.LearnerID = l.LearnerID
+             JOIN Learner l ON ce.LearnerID = l.LearnerID
     WHERE NOT EXISTS (
         SELECT 1
         FROM CoursePrerequisite cp
         WHERE cp.CourseID = @CourseID
-        AND cp.Prereq NOT IN (
+          AND cp.Prereq NOT IN (
             SELECT CourseID
             FROM Course_enrollment
             WHERE LearnerID = ce.LearnerID
