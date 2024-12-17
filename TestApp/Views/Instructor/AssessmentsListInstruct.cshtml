@@ -1,15 +1,11 @@
-﻿@model List<AssessmentDTO>
+﻿@model Tuple<List<AssessmentDTO>, TestApp.Models.ViewModels.IntDTO, TestApp.Models.ViewModels.IntDTO>
 
-<h1>Assessments</h1>
-
-<a asp-controller="Instructor" asp-action="GoToCreateAssessment"
+<a asp-controller="Instructor" asp-action="GoToCreateAssessment" asp-route-courseID="@Model.Item2.Value" asp-route-moduleID="@Model.Item3.Value"
    style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; font-size: 16px; text-align: center; transition: background-color 0.3s ease, transform 0.2s ease;">
     Create Assessment
 </a>
-<br />
-<br />
 
-@if (Model != null && Model.Any())
+@if (Model != null && Model.Item1.Any())
 {
     <table class="table">
         <thead>
@@ -20,7 +16,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var assessment in Model)
+            @foreach (var assessment in Model.Item1)
             {
                 <tr>
                     <td>@assessment.AssessmentID</td>

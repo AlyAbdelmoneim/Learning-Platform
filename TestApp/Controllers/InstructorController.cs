@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using TestApp.Context;
 using TestApp.Models;
 using TestApp.Models.ViewModels;
+
 // using TestApp.Views.Learner;
 
 namespace TestApp.Controllers
@@ -426,7 +428,7 @@ namespace TestApp.Controllers
                 return View("AddLearningActivity1");
             }
         }
-        
+
         public IActionResult FeedbackTrends()
         {
             // Call the stored procedure without parameters
@@ -624,83 +626,80 @@ namespace TestApp.Controllers
             return RedirectToAction("Courses");
         }
 
-         // Action to view learners who completed prerequisites for a specific course
-         public IActionResult CompletedPreq(int courseId)
-         {
-             // Create a list to hold learners who completed prerequisites
-             List<Learner> learners = new List<Learner>();
+        // Action to view learners who completed prerequisites for a specific course
+        public IActionResult CompletedPreq(int courseId)
+        {
+            // Create a list to hold learners who completed prerequisites
+            List<Learner> learners = new List<Learner>();
 
-             // Call the stored procedure to get learners who completed prerequisites
-             learners = _context.Learners.FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId).ToList();
+            // Call the stored procedure to get learners who completed prerequisites
+            learners = _context.Learners
+                .FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId).ToList();
 
-             // Return the view with the list of learners
-             return View(learners);
-         }
+            // Return the view with the list of learners
+            return View(learners);
+        }
 
-         public IActionResult ViewLearners(int courseId)
-         {
-             Console.WriteLine("Course ID: " + courseId);
-             // Get the list of learners who completed the prerequisites for the course
-             var learners = _context.Learners
-                 .FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId)
-                 .Select(l => new LearnerViewModel
-                 {
-                     LearnerID = l.LearnerID,
-                     FirstName = l.first_name,
-                     LastName = l.last_name,
-                     Gender = l.gender,
-                     Email = l.email,
-                     BirthDate = l.birth_date ?? DateOnly.MinValue, // Handle null birth_date
-                     Country = l.country
-                 })
-                 .ToList() ?? new List<LearnerViewModel>(); // Ensure it's never null, return an empty list if no data
+        public IActionResult ViewLearners(int courseId)
+        {
+            Console.WriteLine("Course ID: " + courseId);
+            // Get the list of learners who completed the prerequisites for the course
+            var learners = _context.Learners
+                .FromSqlRaw("EXEC GetLearnersWithCompletedPrerequisites @CourseID={0}", courseId)
+                .Select(l => new LearnerViewModel
+                {
+                    LearnerID = l.LearnerID,
+                    FirstName = l.first_name,
+                    LastName = l.last_name,
+                    Gender = l.gender,
+                    Email = l.email,
+                    BirthDate = l.birth_date ?? DateOnly.MinValue, // Handle null birth_date
+                    Country = l.country
+                })
+                .ToList() ?? new List<LearnerViewModel>(); // Ensure it's never null, return an empty list if no data
 
 
-             //trying to debug but it still didn't display the list even with static loading
-             /*var learners = new List<LearnerViewModel>
-             {
-                 new LearnerViewModel { LearnerID = 1, FirstName = "John", LastName = "Doe" },
-                 new LearnerViewModel { LearnerID = 2, FirstName = "Jane", LastName = "Smith" }
-             };
+            //trying to debug but it still didn't display the list even with static loading
+            /*var learners = new List<LearnerViewModel>
+            {
+                new LearnerViewModel { LearnerID = 1, FirstName = "John", LastName = "Doe" },
+                new LearnerViewModel { LearnerID = 2, FirstName = "Jane", LastName = "Smith" }
+            };
 
-             // Log the learners list to check if it's empty
-             Console.WriteLine("Learners count: " + learners.Count);
-             foreach (var learner in learners)
-             {
-                 Console.WriteLine($"Learner: {learner.LearnerID}, {learner.FirstName} {learner.LastName}");
-             }*/
-             Console.WriteLine("size of learners: " + learners.Count);
+            // Log the learners list to check if it's empty
+            Console.WriteLine("Learners count: " + learners.Count);
+            foreach (var learner in learners)
+            {
+                Console.WriteLine($"Learner: {learner.LearnerID}, {learner.FirstName} {learner.LastName}");
+            }*/
+            Console.WriteLine("size of learners: " + learners.Count);
 
-             return PartialView("CompletedPreq");
-         }
+            return PartialView("CompletedPreq");
+        }
 
-         public IActionResult SendNotification1()
-         {
-             return View();
-         }
+        public IActionResult SendNotification1()
+        {
+            return View();
+        }
 
-         public IActionResult SendNotification2(string message, string urgencyLevel, int learnerId)
-         {
-             try
-             {
-                 var timestamp = DateTime.Now;
+        public IActionResult SendNotification2(string message, string urgencyLevel, int learnerId)
+        {
+            try
+            {
+                var timestamp = DateTime.Now;
 
-                 _context.Database.ExecuteSqlRaw(
-                     "EXEC AssessmentNot @timestamp = {0}, @message = {1}, @urgencylevel = {2}, @LearnerID = {3}",
-                     timestamp, message, urgencyLevel, learnerId);
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC AssessmentNot @timestamp = {0}, @message = {1}, @urgencylevel = {2}, @LearnerID = {3}",
+                    timestamp, message, urgencyLevel, learnerId);
 
-                 TempData["SuccessMessage"] = "Notification sent successfully!";
-             }
-             catch (Exception ex)
-             {
-                 TempData["ErrorMessage"] = "Error sending notification: " + ex.Message;
-             }
-
-             return RedirectToAction("InstructorDashboard");
-         }
-    }
-}
+                TempData["SuccessMessage"] = "Notification sent successfully!";
             }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error sending notification: " + ex.Message;
+            }
+
+            return RedirectToAction("InstructorDashboard");
         }
 
         public IActionResult AssessmentsListInstruct(int courseID, int moduleID)
@@ -714,10 +713,14 @@ namespace TestApp.Controllers
 
             var assessmentList = _context.AssessmentDTOs
                 .FromSqlRaw("EXECUTE dbo.AssessmentListModified @LearnerID = {0}, @CourseID = {1}, @ModuleID = {2}",
-                            learnerID, courseID, moduleID)
+                    learnerID, courseID, moduleID)
                 .ToList();
+            
+            IntDTO course = new IntDTO { Value = courseID };
+            IntDTO module = new IntDTO { Value = moduleID };
+            var tuple = new Tuple<List<AssessmentDTO>, IntDTO, IntDTO>(assessmentList, course, module);
 
-            return View(assessmentList);
+            return View(tuple);
         }
 
         public IActionResult HighestGrades()
@@ -738,23 +741,55 @@ namespace TestApp.Controllers
             return View(assessments);
         }
 
-        public IActionResult GoToCreateAssessment()
+        public IActionResult GoToCreateAssessment(int courseID, int moduleID)
         {
-            var viewModel = new CreateAssessmentViewModel
-            {
-                Courses = _context.Courses.Select(c => new SelectListItem
-                {
-                    Value = c.CourseID.ToString(),
-                    Text = c.Title
-                }).ToList(),
-                Modules = _context.Modules.Select(m => new SelectListItem
-                {
-                    Value = m.ModuleID.ToString(),
-                    Text = m.Title
-                }).ToList()
-            };
-
-            return View(viewModel);
+            IntDTO course = new IntDTO { Value = courseID };
+            IntDTO module = new IntDTO { Value = moduleID };
+            var tuple = new Tuple<IntDTO, IntDTO>(course, module);
+            return View(tuple);
         }
+
+        [HttpPost]
+        [HttpPost]
+        public IActionResult CreateAssessment(int CourseID, int ModuleID, string Title, string AssessmentType,
+            int Weightage, string Description, int TotalMarks, int PassingMarks)
+        {
+            Console.WriteLine("CourseID: " + CourseID + " ModuleID: " + ModuleID); 
+            try
+            {
+                // Execute the stored procedure
+                _context.Database.ExecuteSqlRaw(
+                    "EXEC CreateNewAssessment @ModuleID = {0}, @CourseID = {1}, @assessment_type = {2}, @total_marks = {3}, @passing_marks = {4}, @criteria = {5}, @weightage = {6}, @assessment_description = {7}, @title = {8}",
+                    ModuleID, CourseID, AssessmentType, TotalMarks, PassingMarks, "Criteria", Weightage, Description, Title);
+
+                // Set success message and redirect
+                TempData["SuccessMessage"] = "Assessment created successfully!";
+                return RedirectToAction("AssessmentsListInstruct", new { courseID = CourseID, moduleID = ModuleID });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and prepare error message
+                TempData["ErrorMessage"] = "Error creating assessment: " + ex.Message;
+
+                // Reinitialize ViewModel
+                // var viewModel = new CreateAssessmentViewModel
+                // {
+                //     Courses = _context.Courses.Select(c => new SelectListItem
+                //     {
+                //         Value = c.CourseID.ToString(),
+                //         Text = c.Title
+                //     }).ToList(),
+                //     Modules = _context.Modules.Select(m => new SelectListItem
+                //     {
+                //         Value = m.ModuleID.ToString(),
+                //         Text = m.Title
+                //     }).ToList()
+                // };
+
+                // Return the view with the reinitialized ViewModel
+                return View("GoToCreateAssessment");
+            }
+        }
+
     }
-} 
+}
